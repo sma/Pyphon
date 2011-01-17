@@ -67,7 +67,7 @@
 @implementation IfExpr
 
 + (IfExpr *)withTestExpr:(Expr *)testExpr thenExpr:(Expr *)thenExpr elseExpr:(Expr *)elseExpr {
-	IfExpr *expr = [[[IfExpr alloc] init] autorelease];
+	IfExpr *expr = [[[self alloc] init] autorelease];
 	if (expr) {
 		expr->testExpr = [testExpr retain];
 		expr->thenExpr = [thenExpr retain];
@@ -169,7 +169,7 @@
 @implementation CallExpr
 
 + (CallExpr *)withExpr:(Expr *)expr withArgumentExprs:(NSArray *)argumentExprs {
-	CallExpr *callExpr = [[[CallExpr alloc] init] autorelease];
+	CallExpr *callExpr = [[[self alloc] init] autorelease];
 	if (callExpr) {
 		callExpr->expr = [expr retain];
 		callExpr->argumentExprs = [argumentExprs retain];
@@ -202,7 +202,7 @@
 @implementation IndexExpr
 
 + (IndexExpr *)withExpr:(Expr *)expr withSubscriptExpr:(Expr *)subscriptExpr {
-	IndexExpr *indexExpr = [[[IndexExpr alloc] init] autorelease];
+	IndexExpr *indexExpr = [[[self alloc] init] autorelease];
 	if (indexExpr) {
 		indexExpr->expr = [expr retain];
 		indexExpr->subscriptExpr = [subscriptExpr retain];
@@ -222,7 +222,7 @@
 @implementation AttrExpr
 
 + (AttrExpr *)withExpr:(Expr *)expr withName:(NSString *)name {
-	AttrExpr *attrExpr = [[[AttrExpr alloc] init] autorelease];
+	AttrExpr *attrExpr = [[[self alloc] init] autorelease];
 	if (attrExpr) {
 		attrExpr->expr = [expr retain];
 		attrExpr->name = [name copy];
@@ -242,7 +242,7 @@
 @implementation LiteralExpr
 
 + (Expr *)withValue:(NSObject *)value {
-	LiteralExpr *expr = [[[LiteralExpr alloc] init] autorelease];
+	LiteralExpr *expr = [[[self alloc] init] autorelease];
 	if (expr) {
 		expr->value = [value copy];
 	}
@@ -264,7 +264,7 @@
 @implementation VariableExpr
 
 + (Expr *)withName:(NSString *)name {
-	VariableExpr *expr = [[[VariableExpr alloc] init] autorelease];
+	VariableExpr *expr = [[[self alloc] init] autorelease];
 	if (expr) {
 		expr->name = [name copy];
 	}
@@ -336,7 +336,7 @@
 }
 
 + (Suite *)withStmts:(NSArray *)stmts {
-	Suite *suite = [[[Suite alloc] init] autorelease];
+	Suite *suite = [[[self alloc] init] autorelease];
 	if (suite) {
 		suite->stmts = [stmts copy];
 	}
@@ -360,7 +360,7 @@
 @implementation IfStmt
 
 + (IfStmt *)withTestExpr:(Expr *)testExpr thenSuite:(Suite *)thenSuite elseSuite:(Suite *)elseSuite {
-	IfStmt *stmt = [[[IfStmt alloc] init] autorelease];
+	IfStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->testExpr = [testExpr retain];
 		stmt->thenSuite = [thenSuite retain];
@@ -382,7 +382,7 @@
 @implementation WhileStmt
 
 + (WhileStmt *)withTestExpr:(Expr *)testExpr whileSuite:(Suite *)whileSuite elseSuite:(Suite *)elseSuite {
-	WhileStmt *stmt = [[[WhileStmt alloc] init] autorelease];
+	WhileStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->testExpr = [testExpr retain];
 		stmt->whileSuite = [whileSuite retain];
@@ -404,7 +404,7 @@
 @implementation ForStmt
 
 + (ForStmt *)withTargetExpr:(Expr *)targetExpr iterExpr:(Expr *)iterExpr forSuite:(Suite *)forSuite elseSuite:(Suite *)elseSuite {
-	ForStmt *stmt = [[[ForStmt alloc] init] autorelease];
+	ForStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->targetExpr = [targetExpr retain];
 		stmt->iterExpr = [iterExpr retain];
@@ -428,7 +428,7 @@
 @implementation TryFinallyStmt
 
 + (TryFinallyStmt *)withTrySuite:(Suite *)trySuite finallySuite:(Suite *)finallySuite {
-	TryFinallyStmt *stmt = [[[TryFinallyStmt alloc] init] autorelease];
+	TryFinallyStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->trySuite = [trySuite retain];
 		stmt->finallySuite = [finallySuite retain];
@@ -448,7 +448,7 @@
 @implementation TryExceptStmt
 
 + (TryExceptStmt *)withTrySuite:(Suite *)trySuite exceptClauses:(NSArray *)exceptClauses elseSuite:(Suite *)elseSuite {
-	TryExceptStmt *stmt = [[[TryExceptStmt alloc] init] autorelease];
+	TryExceptStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->trySuite = [trySuite retain];
 		stmt->exceptClauses = [exceptClauses copy];
@@ -467,7 +467,7 @@
 @implementation ExceptClause
 
 + (ExceptClause *)withExceptionsExpr:(Expr *)exceptionsExpr name:(NSString *)name suite:(Suite *)suite {
-	ExceptClause *clause = [[[ExceptClause alloc] init] autorelease];
+	ExceptClause *clause = [[[self alloc] init] autorelease];
 	if (clause) {
 		clause->exceptionsExpr = [exceptionsExpr retain];
 		clause->name = [name copy];
@@ -489,7 +489,7 @@
 @implementation DefStmt
 
 + (DefStmt *)withName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite {
-	DefStmt *stmt = [[[DefStmt alloc] init] autorelease];
+	DefStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->name = [name copy];
 		stmt->params = [params copy];
@@ -511,7 +511,7 @@
 @implementation ClassStmt
 
 + (ClassStmt *)withName:(NSString *)name superExpr:(Expr *)superExpr suite:(Suite *)suite {
-	ClassStmt *stmt = [[[ClassStmt alloc] init] autorelease];
+	ClassStmt *stmt = [[[self alloc] init] autorelease];
 	if (stmt) {
 		stmt->name = [name copy];
 		stmt->superExpr = [superExpr retain];
