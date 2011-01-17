@@ -156,7 +156,35 @@
 
 // dictorsetmaker: test ':' test {',' test ':' test} [','] | testlist
 - (Expr *)parse_dictorsetmaker {
-	return nil; // TODO
+	if ([self at:@"}"]) {
+		return [DictExpr withExprs:[NSArray array]];
+	}
+	Expr *expr = [self parse_test];
+	if ([self at:@":"]) {
+		NSArray *pair = [NSArray arrayWithObjects:expr, [self parse_test], nil];
+		NSMutableArray *exprs = [NSMutableArray arrayWithObject:pair];
+		while ([self at:@","]) {
+			if ([self at:@"}"]) {
+				return [DictExpr withExprs:exprs];
+			}
+			Expr *key = [self parse_test];
+			[self expect:@":"];
+			pair = [NSArray arrayWithObjects:key, [self parse_test], nil];
+			[exprs addObject:pair];
+		}
+		[self expect:@"}"];
+		return [DictExpr withExprs:exprs];
+	} else {
+		NSMutableArray *exprs = [NSMutableArray arrayWithObject:expr];
+		while ([self at:@","]) {
+			if ([self at:@"}"]) {
+				return [SetExpr withExprs:exprs];
+			}
+			[exprs addObject:[self parse_test]];
+		}
+		[self expect:@"}"];
+		return [SetExpr withExprs:exprs];
+	}
 }
 
 // private
@@ -379,27 +407,6 @@
 	return stmts;
 }
 
-// private: ['elif' test ':' suite | 'else' ':' suite]
-- (Suite *)parse_if_stmt_cont {
-	if ([self at:@"elif"]) {
-		Expr *testExpr = [self parse_test];
-		[self expect:@":"];
-		return [Suite withStmt:[IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]]];
-	} else if ([self at:@"else"]) {
-		[self expect:@":"];
-		return [self parse_suite];
-	} else {
-		return [Suite withPassStmt];
-	}
-}
-
-// if_stmt: 'if' test ':' suite {'elif' test ':' suite} ['else' ':' suite]
-- (Stmt *)parse_if_stmt {
-	Expr *testExpr = [self parse_test];
-	[self expect:@":"];
-	return [IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]];
-}
-
 //private: ['else' ':' suite]
 - (Suite *)parse_else {
 	if ([self at:@"else"]) {
@@ -407,6 +414,23 @@
 		return [self parse_suite];
 	}
 	return [Suite withPassStmt];
+}
+
+// private: ['elif' test ':' suite | 'else' ':' suite]
+- (Suite *)parse_if_stmt_cont {
+	if ([self at:@"elif"]) {
+		Expr *testExpr = [self parse_test];
+		[self expect:@":"];
+		return [Suite withStmt:[IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]]];
+	}
+	return [self parse_else];
+}
+
+// if_stmt: 'if' test ':' suite {'elif' test ':' suite} ['else' ':' suite]
+- (Stmt *)parse_if_stmt {
+	Expr *testExpr = [self parse_test];
+	[self expect:@":"];
+	return [IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]];
 }
 
 // while_stmt: 'while' test ':' suite ['else' ':' suite]
@@ -459,7 +483,7 @@
 	return [ExceptClause withExceptionsExpr:exceptionsExpr name:name suite:[self parse_suite]];
 }
 
-// try_stmt: 'try' ':' suite (except_clause {except_clause} | 'finally' ':' suite)
+// try_stmt: 'try' ':' suite (except_clause {except_clause} ['else' ':' suite] | 'finally' ':' suite)
 - (Stmt *)parse_try_stmt {
 	[self expect:@":"];
 	Suite *trySuite = [self parse_suite];
@@ -475,22 +499,28 @@
 	return [TryExceptStmt withTrySuite:trySuite exceptClauses:exceptClauses elseSuite:elseSuite];
 }
 
-// funcdef: 'def' NAME parameters ':' suite
 // parameters: '(' [NAME {',' NAME} [',']] ')'
-- (Stmt *)parse_funcdef {
-	NSString *name = [self parse_name];
+- (NSArray *)parse_parameters {
 	NSMutableArray *params = [NSMutableArray array];
 	[self expect:@"("];
-	if (![self at:@")"]) {
-		[params addObject:[self parse_name]];
-		while ([self at:@","]) {
-			if ([self at:@")"]) {
-				break;
-			}
-			[params addObject:[self parse_name]];
-		}
-		[self at:@")"];  //TODO only if not break
+	if ([self at:@")"]) {
+		return params;
 	}
+	[params addObject:[self parse_name]];
+	while ([self at:@","]) {
+		if ([self at:@")"]) {
+			return params;
+		}
+		[params addObject:[self parse_name]];
+	}
+	[self expect:@")"];
+	return params;
+}
+
+// funcdef: 'def' NAME parameters ':' suite
+- (Stmt *)parse_funcdef {
+	NSString *name = [self parse_name];
+	NSArray *params = [self parse_parameters];
 	[self expect:@":"];
 	return [DefStmt withName:name params:params suite:[self parse_suite]];
 }
