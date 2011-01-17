@@ -120,4 +120,20 @@
 	return string;
 }
 
+- (NSUInteger)lineNumber {
+	NSUInteger lineNumber = 1;
+	NSUInteger start = 0;
+	NSRange r;
+	while ((r = [source rangeOfString:@"\n" 
+							  options:0 
+								range:NSMakeRange(start, [source length] - start)]).location != NSNotFound) {
+		start = r.location + r.length;
+		if (range.location < start) {
+			return lineNumber;
+		}
+		lineNumber += 1;
+	}
+	return lineNumber;
+}
+
 @end

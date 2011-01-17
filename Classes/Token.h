@@ -23,5 +23,6 @@
 - (BOOL)isEqualToString:(NSString *)string;
 - (NSString *)stringValue;
 - (NSString *)stringByUnescapingStringValue;
+- (NSUInteger)lineNumber;
 
 @end
