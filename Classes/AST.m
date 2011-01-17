@@ -280,6 +280,10 @@
 	return [frame localValueForName:name];
 }
 
+- (void)setValue:(NSObject *)value frame:(Frame *)frame {
+	[frame setLocalValue:value forName:name];
+}
+
 @end
 
 
@@ -599,6 +603,10 @@
 	[leftExpr release];
 	[rightExpr release];
 	[super dealloc];
+}
+
+- (void)execute:(Frame *)frame {
+	[leftExpr setValue:[rightExpr eval:frame] frame:frame];
 }
 
 @end
