@@ -430,7 +430,8 @@
 - (Stmt *)parse_if_stmt {
 	Expr *testExpr = [self parse_test];
 	[self expect:@":"];
-	return [IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]];
+	Suite *thenSuite = [self parse_suite];
+	return [IfStmt withTestExpr:testExpr thenSuite:thenSuite elseSuite:[self parse_if_stmt_cont]];
 }
 
 // while_stmt: 'while' test ':' suite ['else' ':' suite]

@@ -8,6 +8,10 @@
 
 #import "ast.h"
 
+BOOL nonZero(NSObject *value) {
+    return value && [(NSNumber *)value intValue];
+}
+
 //
 // expressions
 //
@@ -99,6 +103,13 @@
 
 
 @implementation LtExpr
+
+- (NSObject *)eval:(Frame *)frame {
+    NSNumber *leftValue = (NSNumber *)[leftExpr eval:frame];
+    NSNumber *rightValue = (NSNumber *)[rightExpr eval:frame];
+    return [NSNumber numberWithBool:[leftValue intValue] < [rightValue intValue]];
+}
+
 @end
 
 
@@ -389,7 +400,7 @@
 }
 
 - (void)execute:(Frame *)frame {
-    if ([testExpr eval:frame]) {
+    if (nonZero([testExpr eval:frame])) {
         [thenSuite execute:frame];
     } else {
         [elseSuite execute:frame];
@@ -416,6 +427,13 @@
 	[whileSuite release];
 	[elseSuite release];
 	[super dealloc];
+}
+
+- (void)execute:(Frame *)frame {
+    while (nonZero([testExpr eval:frame])) {
+        [whileSuite execute:frame];
+    }
+    [elseSuite execute:frame];
 }
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "ASTTests.h"
-
+#import "Parser.h"
 
 @implementation ASTTests
 
@@ -56,28 +56,36 @@
 
 #pragma mark ==== statements ====
 
-- (Stmt *)_effectValue:(NSNumber *)value {
-    return [AssignStmt 
-            withLeftExpr:[VariableExpr withName:@"e"] 
-            rightExpr:[LiteralExpr withValue:value]];
+- (void)_runString:(NSString *)string {
+    Parser *parser = [[Parser alloc] initWithString:string];
+    Suite *suite = [parser parse_file];
+    [parser release];
+    [suite execute:frame];
+}
+
+- (void)testPassStmt {
+    [self _runString:@"pass"];
 }
 
 - (void)testIfStmt1 {
-    Stmt *stmt = [IfStmt 
-                  withTestExpr:[LiteralExpr withValue:one]
-                  thenSuite:[Suite withStmt:[self _effectValue:one]] 
-                  elseSuite:[Suite withStmt:[self _effectValue:two]]];
-    [stmt execute:frame];
-    STAssertEqualObjects(one, [frame localValueForName:@"e"], nil);
+    [self _runString:@"if 1:a=1\nelse:b=1"];
+    STAssertEqualObjects(one, [frame localValueForName:@"a"], nil);
 }
 
-- (void)testIfStmt2 {
-    Stmt *stmt = [IfStmt 
-                  withTestExpr:[LiteralExpr withValue:nil]
-                  thenSuite:[Suite withStmt:[self _effectValue:one]] 
-                  elseSuite:[Suite withStmt:[self _effectValue:two]]];
-    [stmt execute:frame];
-    STAssertEqualObjects(two, [frame localValueForName:@"e"], nil);
+- (void)_testIfStmt2 {
+    [self _runString:@"if 0:a=1\nelse:b=1"];
+    STAssertEqualObjects(one, [frame localValueForName:@"b"], nil);
+}
+
+- (void)testWhileStmt1 {
+    [self _runString:@"while 0:pass\nelse:b=1"];
+    STAssertEqualObjects(one, [frame localValueForName:@"b"], nil);
+}
+
+- (void)testWhileStmt2 {
+    [self _runString:@"a=0\nwhile a<2:a=a+1\nelse:b=1"];
+    STAssertEqualObjects(two, [frame localValueForName:@"a"], nil);
+    STAssertEqualObjects(one, [frame localValueForName:@"b"], nil);
 }
 
 @end
