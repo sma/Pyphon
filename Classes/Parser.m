@@ -11,7 +11,7 @@
 @implementation Parser
 
 - (id)initWithString:(NSString *)source {
-	if (self = [self init]) {
+	if ((self = [self init])) {
 		tokens = [[Token tokenizeString:source] retain];
 		index = 0;
 	}

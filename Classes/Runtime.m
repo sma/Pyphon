@@ -22,7 +22,7 @@
 }
 
 - (Frame *)initWithLocals:(NSMutableDictionary *)locals_ globals:(NSMutableDictionary *)globals_ {
-	if (self = [self init]) {
+	if ((self = [self init])) {
 		locals = [locals_ retain];
 		globals = [globals_ retain];
 	}
