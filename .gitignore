@@ -4,3 +4,7 @@ build/
 *.pbxuser
 *.perspective
 *.perspectivev3
+# Xcode 4
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+
