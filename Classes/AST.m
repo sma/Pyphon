@@ -434,6 +434,16 @@
 	[super dealloc];
 }
 
+- (void)execute:(Frame *)frame {
+	// TODO need to create an iterator
+	for (NSObject *value in (id<NSFastEnumeration>)[iterExpr eval:frame]) {
+		[targetExpr setValue:value frame:frame];
+		// TODO implement break
+		[forSuite execute:frame];
+	}
+	[elseSuite execute:frame];
+}
+
 @end
 
 
@@ -546,6 +556,9 @@
 
 + (Stmt *)stmt {
 	return [[[self alloc] init] autorelease];
+}
+
+- (void)execute:(Frame *)frame {
 }
 
 @end
