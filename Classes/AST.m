@@ -302,6 +302,14 @@
 	[super dealloc];
 }
 
+- (NSObject *)eval:(Frame *)frame {
+	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[exprs count]];
+	for (Expr *expr in exprs) {
+		[array addObject:[expr eval:frame]];
+	}
+	return [NSArray arrayWithArray:array];
+}
+
 @end
 
 
