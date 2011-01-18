@@ -19,6 +19,12 @@
     two = [NSNumber numberWithInt:2];
 }
 
+- (void)tearDown {
+    [frame release];
+}
+
+#pragma mark ==== expressions ====
+
 - (void)testLiteralExpr {
 	NSObject *result = [[LiteralExpr withValue:one] eval:frame];
 	STAssertEqualObjects(one, result, nil);
@@ -46,6 +52,32 @@
 - (void)testVariableExpr4 {
     NSObject *result = [[VariableExpr withName:@"d"] eval:frame];
     STAssertNil(result, nil);
+}
+
+#pragma mark ==== statements ====
+
+- (Stmt *)_effectValue:(NSNumber *)value {
+    return [AssignStmt 
+            withLeftExpr:[VariableExpr withName:@"e"] 
+            rightExpr:[LiteralExpr withValue:value]];
+}
+
+- (void)testIfStmt1 {
+    Stmt *stmt = [IfStmt 
+                  withTestExpr:[LiteralExpr withValue:one]
+                  thenSuite:[Suite withStmt:[self _effectValue:one]] 
+                  elseSuite:[Suite withStmt:[self _effectValue:two]]];
+    [stmt execute:frame];
+    STAssertEqualObjects(one, [frame localValueForName:@"e"], nil);
+}
+
+- (void)testIfStmt2 {
+    Stmt *stmt = [IfStmt 
+                  withTestExpr:[LiteralExpr withValue:nil]
+                  thenSuite:[Suite withStmt:[self _effectValue:one]] 
+                  elseSuite:[Suite withStmt:[self _effectValue:two]]];
+    [stmt execute:frame];
+    STAssertEqualObjects(two, [frame localValueForName:@"e"], nil);
 }
 
 @end

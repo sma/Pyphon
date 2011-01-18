@@ -388,6 +388,14 @@
 	[super dealloc];
 }
 
+- (void)execute:(Frame *)frame {
+    if ([testExpr eval:frame]) {
+        [thenSuite execute:frame];
+    } else {
+        [elseSuite execute:frame];
+    }
+}
+
 @end
 
 
