@@ -60,3 +60,10 @@
 - (NSObject *)printWithArray:(NSArray *)arguments frame:(Frame *)frame;
 
 @end
+
+@interface NSObject (Pyphon)
+
+- (NSString *)__repr__;
+- (NSString *)__str__;
+
+@end

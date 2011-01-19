@@ -122,9 +122,93 @@
 }
 
 - (NSObject *)printWithArray:(NSArray *)arguments frame:(Frame *)frame {
-	// TODO not only first argument
-	[frame.delegate print:[NSString stringWithFormat:@"%@", [arguments objectAtIndex:0]]];
+    NSMutableString *buffer = [[NSMutableString alloc] init];
+    BOOL first = YES;
+    for (NSObject *argument in arguments) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@" "];
+        }
+        [buffer appendString:[argument __str__]];
+    }
+	[frame.delegate print:buffer];
+    [buffer release];
 	return nil;
+}
+
+@end
+
+@implementation NSObject (Pyphon)
+
+- (NSString *)__repr__ {
+    return [self description];
+}
+
+- (NSString *)__str__ {
+    return [self __repr__];
+}
+
+@end
+
+@implementation NSString (Pyphon)
+
+- (NSString *)__repr__ {
+    if ([self rangeOfString:@"'"].location != NSNotFound) {
+        if ([self rangeOfString:@"\""].location == NSNotFound) {
+            // TODO escape characters
+            return [NSString stringWithFormat:@"\"%@\"", self];
+        }
+    }
+    // TODO escape characters
+    return [NSString stringWithFormat:@"'%@'", self];
+}
+
+- (NSString *)__str__ {
+    return self;
+}
+
+@end
+
+@implementation NSArray (Pyphon)
+
+- (NSString *)__repr__ {
+    NSMutableString *buffer = [[NSMutableString alloc] init];
+    [buffer appendString:@"("];
+    BOOL first = YES;
+    for (NSObject *value in self) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[value __repr__]];
+    }
+    if ([self count] == 1) {
+        [buffer appendString:@","];
+    }
+    [buffer appendString:@")"];
+    return buffer;
+}
+
+@end
+
+@implementation NSMutableArray (Pyphon)
+
+- (NSString *)__repr__ {
+    NSMutableString *buffer = [[NSMutableString alloc] init];
+    [buffer appendString:@"["];
+    BOOL first = YES;
+    for (NSObject *value in self) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[value __repr__]];
+    }
+    [buffer appendString:@"]"];
+    return buffer;
 }
 
 @end
