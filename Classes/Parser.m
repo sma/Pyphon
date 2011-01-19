@@ -568,7 +568,7 @@
 		[self expect:@"!INDENT"];
 		NSMutableArray *stmts = [NSMutableArray array];
 		while (![self at:@"!DEDENT"]) {
-			[stmts addObject:[self parse_stmt]];
+			[stmts addObjectsFromArray:[self parse_stmt]];
 		}
 		return [Suite withStmts:stmts];
 	}
