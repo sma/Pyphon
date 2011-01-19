@@ -23,6 +23,8 @@
 		9338E64D12E3ADBC0040049D /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 9338E64C12E3ADBC0040049D /* Default.png */; };
 		9338E65B12E3AEC50040049D /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9338E65912E3AEC50040049D /* Icon.png */; };
 		9338E65C12E3AEC50040049D /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9338E65A12E3AEC50040049D /* Icon@2x.png */; };
+		936143AE12E7535700C169D1 /* Tester.m in Sources */ = {isa = PBXBuildFile; fileRef = 936143AD12E7535700C169D1 /* Tester.m */; };
+		936143B012E7572B00C169D1 /* parsertests.py in Resources */ = {isa = PBXBuildFile; fileRef = 936143AF12E7572B00C169D1 /* parsertests.py */; };
 		9370CF2F12E6122200C3F57D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		9370CF3012E6122200C3F57D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		9370CF3112E6122200C3F57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
@@ -60,6 +62,9 @@
 		9338E64C12E3ADBC0040049D /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Default.png; path = ../Pyphon/Default.png; sourceTree = SOURCE_ROOT; };
 		9338E65912E3AEC50040049D /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Icon.png; path = ../Pyphon/Icon.png; sourceTree = SOURCE_ROOT; };
 		9338E65A12E3AEC50040049D /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon@2x.png"; path = "../Pyphon/Icon@2x.png"; sourceTree = SOURCE_ROOT; };
+		936143AC12E7535700C169D1 /* Tester.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tester.h; sourceTree = "<group>"; };
+		936143AD12E7535700C169D1 /* Tester.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tester.m; sourceTree = "<group>"; };
+		936143AF12E7572B00C169D1 /* parsertests.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = parsertests.py; sourceTree = "<group>"; };
 		9370CF2E12E6122200C3F57D /* PyphonTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PyphonTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9370CF3412E6122200C3F57D /* PyphonTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PyphonTests-Info.plist"; sourceTree = "<group>"; };
 		9370CF3612E6122200C3F57D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -142,6 +147,7 @@
 				2899E5210DE3E06400AC0155 /* PyphonViewController.xib */,
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* Pyphon-Info.plist */,
+				936143AF12E7572B00C169D1 /* parsertests.py */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -178,6 +184,8 @@
 				9338E42E12E360B40040049D /* AST.m */,
 				9338E43412E361CE0040049D /* Runtime.h */,
 				9338E43512E361CE0040049D /* Runtime.m */,
+				936143AC12E7535700C169D1 /* Tester.h */,
+				936143AD12E7535700C169D1 /* Tester.m */,
 			);
 			name = Pyphon;
 			sourceTree = "<group>";
@@ -280,6 +288,7 @@
 				9338E64D12E3ADBC0040049D /* Default.png in Resources */,
 				9338E65B12E3AEC50040049D /* Icon.png in Resources */,
 				9338E65C12E3AEC50040049D /* Icon@2x.png in Resources */,
+				936143B012E7572B00C169D1 /* parsertests.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,6 +330,7 @@
 				9338E43012E360B40040049D /* Token.m in Sources */,
 				9338E43112E360B40040049D /* AST.m in Sources */,
 				9338E43612E361CE0040049D /* Runtime.m in Sources */,
+				936143AE12E7535700C169D1 /* Tester.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -471,6 +481,7 @@
 				9370CF3E12E6122200C3F57D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Pyphon" */ = {
 			isa = XCConfigurationList;

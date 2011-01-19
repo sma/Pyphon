@@ -7,6 +7,8 @@
 //
 
 #import "PyphonViewController.h"
+#import "Tester.h"
+
 
 @implementation PyphonViewController
 
@@ -14,6 +16,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	inputView.text = @"print(3+4)";
+    
+    outputView.text = [Tester run];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

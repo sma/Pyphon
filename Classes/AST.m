@@ -321,6 +321,13 @@ BOOL nonZero(NSObject *value) {
 	return [NSArray arrayWithArray:array];
 }
 
+- (void)setValue:(NSObject *)value frame:(Frame *)frame {
+    NSArray *tuple = (NSArray *)value;
+    for (NSUInteger i = 0; i < [exprs count]; i++) {
+        [[exprs objectAtIndex:i] setValue:[tuple objectAtIndex:i] frame:frame];
+    }
+}
+
 @end
 
 
@@ -375,6 +382,17 @@ BOOL nonZero(NSObject *value) {
 	for (Stmt *stmt in stmts) {
 		[stmt execute:frame];
 	}
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    if ([[stmts lastObject] isKindOfClass:[ExprStmt class]]) {
+        for (int i = 0; i < [stmts count] - 1; i++) {
+            [[stmts objectAtIndex:i] execute:frame];
+        }
+        return [(ExprStmt *)[stmts lastObject] evaluate:frame];
+    }
+    [self execute:frame];
+    return nil;
 }
 
 @end
@@ -684,6 +702,10 @@ BOOL nonZero(NSObject *value) {
 
 - (void)execute:(Frame *)frame {
 	[expr eval:frame];
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    return [expr eval:frame];
 }
 
 @end

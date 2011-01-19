@@ -234,6 +234,7 @@
 + (Suite *)withStmts:(NSArray *)stmts;
 
 - (void)execute:(Frame *)frame;
+- (NSObject *)evaluate:(Frame *)frame;
 
 @end
 
@@ -385,5 +386,7 @@
 }
 
 + (Stmt *)withExpr:(Expr *)expr;
+
+- (NSObject *)evaluate:(Frame *)frame;
 
 @end

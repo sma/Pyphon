@@ -10,8 +10,8 @@
 
 
 @interface Tester : NSObject {
-@private
-    
 }
+
++ (NSString *)run;
 
 @end
