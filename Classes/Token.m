@@ -111,13 +111,20 @@
 }
 
 - (NSString *)stringByUnescapingStringValue {
-	NSString *string = [self stringValue];
-	string = [string substringWithRange:NSMakeRange(1, [string length] - 2)];
-	string = [string stringByReplacingOccurrencesOfString:@"\\\"" withString:@"\""];
-	string = [string stringByReplacingOccurrencesOfString:@"\\\'" withString:@"\'"];
-	string = [string stringByReplacingOccurrencesOfString:@"\\\n" withString:@"\n"];
-	string = [string stringByReplacingOccurrencesOfString:@"\\\\" withString:@"\\"];
-	return string;
+    NSUInteger length = range.length - 2;
+    NSString *string = [source substringWithRange:NSMakeRange(range.location + 1, length)];
+    NSMutableString *buffer = [NSMutableString stringWithCapacity:length];
+    for (NSUInteger i = 0; i < length; i++) {
+        unichar c = [string characterAtIndex:i];
+        if (c == '\\') {
+            c = [string characterAtIndex:++i];
+            if (c == 'n') {
+                c = '\n';
+            }
+        }
+        [buffer appendFormat:@"%c", c];
+    }
+    return buffer;
 }
 
 - (NSUInteger)lineNumber {
