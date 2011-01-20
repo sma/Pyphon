@@ -183,14 +183,20 @@
 @implementation NSString (Pyphon)
 
 - (NSString *)__repr__ {
-    if ([self rangeOfString:@"'"].location != NSNotFound) {
-        if ([self rangeOfString:@"\""].location == NSNotFound) {
-            // TODO escape characters
-            return [NSString stringWithFormat:@"\"%@\"", self];
-        }
+    NSString *singleQuote = @"\'";
+    NSString *doubleQuote = @"\"";
+    
+    BOOL useDoubleQuote = [self rangeOfString:singleQuote].location != NSNotFound
+        && [self rangeOfString:doubleQuote].location == NSNotFound;
+    NSString *quote = useDoubleQuote ? doubleQuote : singleQuote;
+    
+    NSString *string = self;
+    string = [string stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    string = [string stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
+    if (!useDoubleQuote) {
+        string = [string stringByReplacingOccurrencesOfString:singleQuote withString:@"\\'"];
     }
-    // TODO escape characters
-    return [NSString stringWithFormat:@"'%@'", self];
+    return [NSString stringWithFormat:@"%@%@%@", quote, string, quote];
 }
 
 - (NSString *)__str__ {
