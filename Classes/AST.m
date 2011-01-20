@@ -18,7 +18,7 @@ BOOL nonZero(NSObject *value) {
 
 @implementation Expr
 
-- (NSObject *)eval:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	[self doesNotRecognizeSelector:_cmd];
 	return nil;
 }
@@ -104,9 +104,9 @@ BOOL nonZero(NSObject *value) {
 
 @implementation LtExpr
 
-- (NSObject *)eval:(Frame *)frame {
-    NSNumber *leftValue = (NSNumber *)[leftExpr eval:frame];
-    NSNumber *rightValue = (NSNumber *)[rightExpr eval:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSNumber *leftValue = (NSNumber *)[leftExpr evaluate:frame];
+    NSNumber *rightValue = (NSNumber *)[rightExpr evaluate:frame];
     return [NSNumber numberWithBool:[leftValue intValue] < [rightValue intValue]];
 }
 
@@ -143,9 +143,9 @@ BOOL nonZero(NSObject *value) {
 
 @implementation AddExpr
 
-- (NSObject *)eval:(Frame *)frame {
-	NSObject *leftValue = [leftExpr eval:frame];
-	NSObject *rightValue = [rightExpr eval:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+	NSObject *leftValue = [leftExpr evaluate:frame];
+	NSObject *rightValue = [rightExpr evaluate:frame];
 	int result = [(NSNumber *)leftValue intValue] + [(NSNumber *)rightValue intValue];
 	return [NSNumber numberWithInt:result];
 }
@@ -194,12 +194,12 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
-- (NSObject *)eval:(Frame *)frame {
-	NSObject *function = [expr eval:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+	NSObject *function = [expr evaluate:frame];
 	NSUInteger count = [argumentExprs count];
 	NSMutableArray *arguments = [[NSMutableArray alloc] initWithCapacity:count];
 	for (NSUInteger i = 0; i < count; i++) {
-		[arguments addObject:[[argumentExprs objectAtIndex:i] eval:frame]];
+		[arguments addObject:[[argumentExprs objectAtIndex:i] evaluate:frame]];
 	}
 	// TODO need to use a protocol here
 	NSObject *result = [(Function *)function callWithArray:arguments frame:frame];
@@ -265,7 +265,7 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
-- (NSObject *)eval:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	return value;
 }
 
@@ -287,7 +287,7 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
-- (NSObject *)eval:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	return [frame localValueForName:name];
 }
 
@@ -313,10 +313,10 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
-- (NSObject *)eval:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[exprs count]];
 	for (Expr *expr in exprs) {
-		[array addObject:[expr eval:frame]];
+		[array addObject:[expr evaluate:frame]];
 	}
 	return [NSArray arrayWithArray:array];
 }
@@ -418,7 +418,7 @@ BOOL nonZero(NSObject *value) {
 }
 
 - (void)execute:(Frame *)frame {
-    if (nonZero([testExpr eval:frame])) {
+    if (nonZero([testExpr evaluate:frame])) {
         [thenSuite execute:frame];
     } else {
         [elseSuite execute:frame];
@@ -448,7 +448,7 @@ BOOL nonZero(NSObject *value) {
 }
 
 - (void)execute:(Frame *)frame {
-    while (nonZero([testExpr eval:frame])) {
+    while (nonZero([testExpr evaluate:frame])) {
         [whileSuite execute:frame];
     }
     [elseSuite execute:frame];
@@ -480,7 +480,7 @@ BOOL nonZero(NSObject *value) {
 
 - (void)execute:(Frame *)frame {
 	// TODO need to create an iterator
-	for (NSObject *value in (id<NSFastEnumeration>)[iterExpr eval:frame]) {
+	for (NSObject *value in (id<NSFastEnumeration>)[iterExpr evaluate:frame]) {
 		[targetExpr setValue:value frame:frame];
 		// TODO implement break
 		[forSuite execute:frame];
@@ -671,7 +671,7 @@ BOOL nonZero(NSObject *value) {
 }
 
 - (void)execute:(Frame *)frame {
-	[leftExpr setValue:[rightExpr eval:frame] frame:frame];
+	[leftExpr setValue:[rightExpr evaluate:frame] frame:frame];
 }
 
 @end
@@ -701,11 +701,11 @@ BOOL nonZero(NSObject *value) {
 }
 
 - (void)execute:(Frame *)frame {
-	[expr eval:frame];
+	[expr evaluate:frame];
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return [expr eval:frame];
+    return [expr evaluate:frame];
 }
 
 @end

@@ -26,31 +26,31 @@
 #pragma mark ==== expressions ====
 
 - (void)testLiteralExpr {
-	NSObject *result = [[LiteralExpr withValue:one] eval:frame];
+	NSObject *result = [[LiteralExpr withValue:one] evaluate:frame];
 	STAssertEqualObjects(one, result, nil);
 }
 
 - (void)testVariableExpr1 {
     [frame setLocalValue:one forName:@"a"];
-    NSObject *result = [[VariableExpr withName:@"a"] eval:frame];
+    NSObject *result = [[VariableExpr withName:@"a"] evaluate:frame];
     STAssertEqualObjects(one, result, nil);
 }
 
 - (void)testVariableExpr2 {
     [frame setGlobalValue:two forName:@"b"];
-    NSObject *result = [[VariableExpr withName:@"b"] eval:frame];
+    NSObject *result = [[VariableExpr withName:@"b"] evaluate:frame];
     STAssertEqualObjects(two, result, nil);
 }
 
 - (void)testVariableExpr3 {
     [frame setLocalValue:one forName:@"c"];
     [frame setGlobalValue:two forName:@"c"];
-    NSObject *result = [[VariableExpr withName:@"c"] eval:frame];
+    NSObject *result = [[VariableExpr withName:@"c"] evaluate:frame];
     STAssertEqualObjects(one, result, nil);
 }
 
 - (void)testVariableExpr4 {
-    NSObject *result = [[VariableExpr withName:@"d"] eval:frame];
+    NSObject *result = [[VariableExpr withName:@"d"] evaluate:frame];
     STAssertNil(result, nil);
 }
 

@@ -16,7 +16,7 @@
 @interface Expr : NSObject { /* abstract */
 }
 
-- (NSObject *)eval:(Frame *)frame;
+- (NSObject *)evaluate:(Frame *)frame;
 - (void)setValue:(NSObject *)value frame:(Frame *)frame;
 
 @end

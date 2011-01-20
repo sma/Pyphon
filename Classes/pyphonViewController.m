@@ -62,7 +62,7 @@
 	
 	Frame *frame = [Frame newInitial];
 	frame.delegate = self;
-	NSString *result = [[expr eval:frame] description];
+	NSString *result = [[expr evaluate:frame] description];
 	[frame release];
 
 	[self _appendStringToOutputView:result];
