@@ -8,6 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+
+@interface Pyphon : NSObject
+
++ (NSObject *)True;
++ (NSObject *)False;
++ (NSObject *)None;
+
+@end
+
+
 @protocol PyphonDelegate <NSObject>
 
 - (void)print:(NSString *)string;

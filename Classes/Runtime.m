@@ -9,6 +9,35 @@
 #import "Runtime.h"
 
 
+@implementation Pyphon
+
++ (NSObject *)True {
+    static NSObject *True = nil;
+    if (!True) {
+        True = [[NSNumber alloc] initWithBool:YES];
+    }
+    return True;
+}
+
++ (NSObject *)False {
+    static NSObject *False = nil;
+    if (!False) {
+        False = [[NSNumber alloc] initWithBool:NO];
+    }
+    return False;
+}
+
++ (NSObject *)None {
+    static NSObject *None = nil;
+    if (!None) {
+        None = [[NSNumber alloc] initWithInt:0]; // TODO need a real None object here
+    }
+    return None;
+}
+
+@end
+
+
 @implementation Frame
 
 @synthesize delegate;
@@ -208,6 +237,51 @@
         [buffer appendString:[value __repr__]];
     }
     [buffer appendString:@"]"];
+    return buffer;
+}
+
+@end
+
+@implementation NSMutableSet (Pyphon)
+
+- (NSString *)__repr__ {
+    if (![self count]) {
+        return @"set()";
+    }
+    NSMutableString *buffer = [[NSMutableString alloc] init];
+    [buffer appendString:@"{"];
+    BOOL first = YES;
+    for (NSObject *value in self) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[value __repr__]];
+    }
+    [buffer appendString:@"}"];
+    return buffer;
+}
+
+@end
+
+@implementation NSMutableDictionary (Pyphon)
+
+- (NSString *)__repr__ {
+    NSMutableString *buffer = [[NSMutableString alloc] init];
+    [buffer appendString:@"{"];
+    BOOL first = YES;
+    for (NSObject *key in self) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[key __repr__]];
+        [buffer appendString:@": "];
+        [buffer appendString:[[self objectForKey:key] __repr__]];
+    }
+    [buffer appendString:@"}"];
     return buffer;
 }
 
