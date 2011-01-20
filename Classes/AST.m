@@ -69,6 +69,15 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
+- (NSString *)op {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@(%@, %@)", [self op], leftExpr, rightExpr];
+}
+
 @end
 
 
@@ -85,6 +94,15 @@ static NSException *exception(NSString *name) {
 - (void)dealloc {
 	[expr release];
 	[super dealloc];
+}
+
+- (NSString *)op {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@(%@)", [self op], expr];
 }
 
 @end
@@ -113,6 +131,10 @@ static NSException *exception(NSString *name) {
     return [(nonZero([testExpr evaluate:frame]) ? thenExpr : elseExpr) evaluate:frame];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"If(%@, %@, %@)", testExpr, thenExpr, elseExpr];
+}
+
 @end
 
 
@@ -124,6 +146,10 @@ static NSException *exception(NSString *name) {
         return left;
     }
     return [rightExpr evaluate:frame];
+}
+
+- (NSString *)op {
+    return @"Or";
 }
 
 @end
@@ -139,6 +165,10 @@ static NSException *exception(NSString *name) {
     return left;
 }
 
+- (NSString *)op {
+    return @"And";
+}
+
 @end
 
 
@@ -146,6 +176,10 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return boolValue(!nonZero([expr evaluate:frame]));
+}
+
+- (NSString *)op {
+    return @"Not";
 }
 
 @end
@@ -160,6 +194,10 @@ static NSException *exception(NSString *name) {
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedAscending);
 }
 
+- (NSString *)op {
+    return @"Lt";
+}
+
 @end
 
 
@@ -170,6 +208,10 @@ static NSException *exception(NSString *name) {
     NSObject *right = [rightExpr evaluate:frame];
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedDescending);
+}
+
+- (NSString *)op {
+    return @"Gt";
 }
 
 @end
@@ -184,6 +226,10 @@ static NSException *exception(NSString *name) {
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedDescending);   
 }
 
+- (NSString *)op {
+    return @"Le";
+}
+
 @end
 
 
@@ -194,6 +240,10 @@ static NSException *exception(NSString *name) {
     NSObject *right = [rightExpr evaluate:frame];
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedAscending);
+}
+
+- (NSString *)op {
+    return @"Ge";
 }
 
 @end
@@ -207,6 +257,10 @@ static NSException *exception(NSString *name) {
     return boolValue([left isEqual:right]);
 }
 
+- (NSString *)op {
+    return @"Eq";
+}
+
 @end
 
 
@@ -216,6 +270,10 @@ static NSException *exception(NSString *name) {
     NSObject *left = [leftExpr evaluate:frame];
     NSObject *right = [rightExpr evaluate:frame];
     return boolValue(![left isEqual:right]);
+}
+
+- (NSString *)op {
+    return @"Ne";
 }
 
 @end
@@ -235,6 +293,10 @@ static NSException *exception(NSString *name) {
     @throw exception(@"TypeError");
 }
 
+- (NSString *)op {
+    return @"In";
+}
+
 @end
 
 
@@ -244,6 +306,10 @@ static NSException *exception(NSString *name) {
     NSObject *left = [leftExpr evaluate:frame];
     NSObject *right = [rightExpr evaluate:frame];
     return boolValue(left == right);
+}
+
+- (NSString *)op {
+    return @"Is";
 }
 
 @end
@@ -257,6 +323,10 @@ static NSException *exception(NSString *name) {
     return intValue(left + right);
 }
 
+- (NSString *)op {
+    return @"Add";
+}
+
 @end
 
 
@@ -266,6 +336,10 @@ static NSException *exception(NSString *name) {
     int left = asInt([leftExpr evaluate:frame]);
     int right = asInt([rightExpr evaluate:frame]);
     return intValue(left - right);   
+}
+
+- (NSString *)op {
+    return @"Sub";
 }
 
 @end
@@ -279,6 +353,10 @@ static NSException *exception(NSString *name) {
     return intValue(left * right);
 }
 
+- (NSString *)op {
+    return @"Mul";
+}
+
 @end
 
 
@@ -288,6 +366,10 @@ static NSException *exception(NSString *name) {
     int left = asInt([leftExpr evaluate:frame]);
     int right = asInt([rightExpr evaluate:frame]);
     return intValue(left / right);
+}
+
+- (NSString *)op {
+    return @"Div";
 }
 
 @end
@@ -301,6 +383,10 @@ static NSException *exception(NSString *name) {
     return intValue(left % right);
 }
 
+- (NSString *)op {
+    return @"Mod";
+}
+
 @end
 
 
@@ -310,6 +396,10 @@ static NSException *exception(NSString *name) {
     return intValue(-asInt([expr evaluate:frame]));
 }
 
+- (NSString *)op {
+    return @"Neg";
+}
+
 @end
 
 
@@ -317,6 +407,10 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return intValue(+asInt([expr evaluate:frame]));
+}
+
+- (NSString *)op {
+    return @"Pos";
 }
 
 @end
@@ -451,6 +545,10 @@ static NSException *exception(NSString *name) {
 	return value;
 }
 
+- (NSString *)description {
+    return [value description];
+}
+
 @end
 
 
@@ -475,6 +573,10 @@ static NSException *exception(NSString *name) {
 
 - (void)setValue:(NSObject *)value frame:(Frame *)frame {
 	[frame setLocalValue:value forName:name];
+}
+
+- (NSString *)description {
+    return name;
 }
 
 @end
@@ -510,6 +612,27 @@ static NSException *exception(NSString *name) {
     }
 }
 
+- (NSString *)op {
+    return @"Tuple";
+}
+
+- (NSString *)description {
+    NSMutableString *buffer = [NSMutableString string];
+    [buffer appendString:[self op]];
+    [buffer appendString:@"("];
+    BOOL first = YES;
+    for (Expr *expr in exprs) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[expr description]];
+    }
+    [buffer appendString:@")"];
+    return buffer;
+}
+
 @end
 
 
@@ -523,6 +646,10 @@ static NSException *exception(NSString *name) {
 	return list;
 }
 
+- (NSString *)op {
+    return @"List";
+}
+
 @end
 
 
@@ -534,6 +661,10 @@ static NSException *exception(NSString *name) {
 		[set addObject:[expr evaluate:frame]];
 	}
 	return set; 
+}
+
+- (NSString *)op {
+    return @"Set";
 }
 
 @end
@@ -551,6 +682,31 @@ static NSException *exception(NSString *name) {
         [dictionary setObject:value forKey:key];
     }
     return dictionary;
+}
+
+- (NSString *)op {
+    return @"Dict";
+}
+
+- (NSString *)description {
+    NSMutableString *buffer = [NSMutableString string];
+    [buffer appendString:[self op]];
+    [buffer appendString:@"("];
+    BOOL first = YES;
+    for (NSArray *pair in exprs) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        Expr *keyExpr = [pair objectAtIndex:0];
+        Expr *valueExpr = [pair objectAtIndex:1];
+        [buffer appendString:[keyExpr description]];
+        [buffer appendString:@": "];
+        [buffer appendString:[valueExpr description]];
+    }
+    [buffer appendString:@")"];
+    return buffer;
 }
 
 @end
