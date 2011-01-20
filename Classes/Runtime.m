@@ -95,6 +95,9 @@
 	[globals setObject:value forKey:name];
 }
 
+- (NSMutableDictionary *)globals {
+    return globals;
+}
 
 @end
 

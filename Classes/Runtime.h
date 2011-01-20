@@ -39,6 +39,7 @@
 - (void)setLocalValue:(NSObject *)value forName:(NSString *)name;
 - (NSObject *)globalValueForName:(NSString *)name;
 - (void)setGlobalValue:(NSObject *)value forName:(NSString *)name;
+- (NSMutableDictionary *)globals;
 
 @end
 

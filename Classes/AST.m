@@ -878,6 +878,15 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
+- (void)execute:(Frame *)frame {
+    @try {
+        [trySuite execute:frame];
+    }
+    @finally {
+        [finallySuite execute:frame];
+    }
+}
+
 @end
 
 
@@ -895,6 +904,17 @@ static NSException *exception(NSString *name) {
 
 - (void)dealloc {
 	[super dealloc];
+}
+
+- (void)execute:(Frame *)frame {
+    @try {
+        [trySuite execute:frame];
+    }
+    @catch (NSException *exception) {
+        // TODO
+        @throw exception;
+    }
+    [elseSuite execute:frame];
 }
 
 @end
@@ -939,6 +959,14 @@ static NSException *exception(NSString *name) {
 	[params release];
 	[suite release];
 	[super dealloc];
+}
+
+- (void)execute:(Frame *)frame {
+    Function *function = [Function withName:name 
+                                     params:params 
+                                      suite:suite 
+                                    globals:[frame globals]];
+    [frame setLocalValue:function forName:name];
 }
 
 @end
