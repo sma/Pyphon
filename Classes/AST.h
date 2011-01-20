@@ -9,9 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "Runtime.h"
 
-//
-// expressions
-//
+
+#pragma mark --- expression nodes ---
+
 
 @interface Expr : NSObject { /* abstract */
 }
@@ -213,9 +213,9 @@
 }
 @end
 
-//
-// statements
-// 
+
+#pragma mark --- statement nodes ---
+
 
 @interface Stmt : NSObject { /* abstract */
 }

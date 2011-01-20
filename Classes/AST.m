@@ -8,13 +8,35 @@
 
 #import "ast.h"
 
-BOOL nonZero(NSObject *value) {
+
+#pragma mark -
+#pragma mark --- helper functions ---
+
+
+static BOOL nonZero(NSObject *value) {
     return value && [(NSNumber *)value intValue];
 }
 
-//
-// expressions
-//
+static NSObject *boolValue(BOOL value) {
+    return value ? [Pyphon True] : [Pyphon False];
+}
+
+static int asInt(NSObject *value) {
+    return [(NSNumber *)value intValue]; // TODO check runtime type
+}
+
+static NSObject *intValue(int value) {
+    return [[[NSNumber alloc] initWithInt:value] autorelease]; // TODO think about memory management
+}
+
+static NSException *exception(NSString *name) {
+    return [NSException exceptionWithName:name reason:@"" userInfo:nil];
+}
+
+
+#pragma mark -
+#pragma mark --- expression nodes ---
+
 
 @implementation Expr
 
@@ -87,93 +109,216 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
+- (NSObject *)evaluate:(Frame *)frame {
+    return [(nonZero([testExpr evaluate:frame]) ? thenExpr : elseExpr) evaluate:frame];
+}
+
 @end
 
 
 @implementation OrExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    if (nonZero(left)) {
+        return left;
+    }
+    return [rightExpr evaluate:frame];
+}
+
 @end
 
 
 @implementation AndExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    if (nonZero(left)) {
+        return [rightExpr evaluate:frame];
+    }
+    return left;
+}
+
 @end
 
 
 @implementation NotExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    return boolValue(!nonZero([expr evaluate:frame]));
+}
+
 @end
 
 
 @implementation LtExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    NSNumber *leftValue = (NSNumber *)[leftExpr evaluate:frame];
-    NSNumber *rightValue = (NSNumber *)[rightExpr evaluate:frame];
-    return [NSNumber numberWithBool:[leftValue intValue] < [rightValue intValue]];
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    // TODO can we conform to a protocol instead of casting?
+    return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedAscending);
 }
 
 @end
 
 
 @implementation GtExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    // TODO can we conform to a protocol instead of casting?
+    return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedDescending);
+}
+
 @end
 
 
 @implementation LeExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    // TODO can we conform to a protocol instead of casting?
+    return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedDescending);   
+}
+
 @end
 
 
 @implementation GeExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    // TODO can we conform to a protocol instead of casting?
+    return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedAscending);
+}
+
 @end
 
 
 @implementation EqExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    return boolValue([left isEqual:right]);
+}
+
 @end
 
 
 @implementation NeExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    return boolValue(![left isEqual:right]);
+}
+
 @end
 
 
 @implementation InExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    if ([right respondsToSelector:@selector(containsObject:)]) {
+        return boolValue([(NSArray *)right containsObject:left]);
+    }
+    if ([right isKindOfClass:[NSString class]]) {
+        return boolValue([(NSString *)right rangeOfString:(NSString *)left].location != NSNotFound);
+    }
+    @throw exception(@"TypeError");
+}
+
 @end
 
 
 @implementation IsExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    NSObject *right = [rightExpr evaluate:frame];
+    return boolValue(left == right);
+}
+
 @end
 
 
 @implementation AddExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-	NSObject *leftValue = [leftExpr evaluate:frame];
-	NSObject *rightValue = [rightExpr evaluate:frame];
-	int result = [(NSNumber *)leftValue intValue] + [(NSNumber *)rightValue intValue];
-	return [NSNumber numberWithInt:result];
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+    return intValue(left + right);
 }
 
 @end
 
 
 @implementation SubExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+    return intValue(left - right);   
+}
+
 @end
 
 
 @implementation MulExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+    return intValue(left * right);
+}
+
 @end
 
 
 @implementation DivExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+    return intValue(left / right);
+}
+
 @end
 
 
 @implementation ModExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+    return intValue(left % right);
+}
+
 @end
 
 
 @implementation NegExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    return intValue(-asInt([expr evaluate:frame]));
+}
+
 @end
 
 
 @implementation PosExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    return intValue(+asInt([expr evaluate:frame]));
+}
+
 @end
 
 
@@ -227,6 +372,39 @@ BOOL nonZero(NSObject *value) {
 	[super dealloc];
 }
 
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *value = [expr evaluate:frame];
+    
+    if ([value isKindOfClass:[NSString class]]) {
+        NSString *stringValue = (NSString *)value;
+        int index = asInt([subscriptExpr evaluate:frame]); //TODO could be a slice
+        if (index < 0) {
+            index += [stringValue length];
+        }
+        if (index < 0 || index >= [stringValue length]) {
+            @throw exception(@"IndexError");
+        }
+        return [stringValue substringWithRange:NSMakeRange(index, 1)];
+    }
+    if ([value respondsToSelector:@selector(objectAtIndex:)]) {
+        NSArray *arrayValue = (NSArray *)value;
+        int index = asInt([subscriptExpr evaluate:frame]); //TODO could be a slice
+        if (index < 0) {
+            index += [arrayValue count];
+        }
+        if (index < 0 || index >= [arrayValue count]) {
+            @throw exception(@"IndexError");
+        }
+        return [arrayValue objectAtIndex:index];
+    }
+    if ([value respondsToSelector:@selector(objectForKey:)]) {
+        NSDictionary *dictionaryValue = (NSDictionary *)value;
+        return [dictionaryValue objectForKey:[subscriptExpr evaluate:frame]];
+    }
+    @throw exception(@"TypeError");
+}
+
 @end
 
 
@@ -245,6 +423,10 @@ BOOL nonZero(NSObject *value) {
 	[expr release];
 	[name release];
 	[super dealloc];
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    return [Pyphon None]; // TODO implement getattr
 }
 
 @end
@@ -314,11 +496,11 @@ BOOL nonZero(NSObject *value) {
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[exprs count]];
+	NSMutableArray *tuple = [NSMutableArray arrayWithCapacity:[exprs count]];
 	for (Expr *expr in exprs) {
-		[array addObject:[expr evaluate:frame]];
+		[tuple addObject:[expr evaluate:frame]];
 	}
-	return [NSArray arrayWithArray:array];
+	return [NSArray arrayWithArray:tuple];
 }
 
 - (void)setValue:(NSObject *)value frame:(Frame *)frame {
@@ -332,19 +514,51 @@ BOOL nonZero(NSObject *value) {
 
 
 @implementation ListExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+	NSMutableArray *list = [NSMutableArray arrayWithCapacity:[exprs count]];
+	for (Expr *expr in exprs) {
+		[list addObject:[expr evaluate:frame]];
+	}
+	return list;
+}
+
 @end
 
 
 @implementation SetExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+	NSMutableSet *set = [NSMutableSet setWithCapacity:[exprs count]];
+	for (Expr *expr in exprs) {
+		[set addObject:[expr evaluate:frame]];
+	}
+	return set; 
+}
+
 @end
 
 
 @implementation DictExpr
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:[exprs count]];
+    for (NSArray *pair in exprs) {
+        Expr *keyExpr = [pair objectAtIndex:0];
+        Expr *valueExpr = [pair objectAtIndex:1];
+        NSObject *key = [keyExpr evaluate:frame];
+        NSObject *value = [valueExpr evaluate:frame];
+        [dictionary setObject:value forKey:key];
+    }
+    return dictionary;
+}
+
 @end
 
-//
-// statements
-//
+
+#pragma mark -
+#pragma mark --- statement nodes ---
+
 
 @implementation Stmt
 
