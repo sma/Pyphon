@@ -12,11 +12,13 @@
 @interface PyphonViewController : UIViewController <PyphonDelegate> {
 	IBOutlet UITextView *inputView;
 	IBOutlet UITextView *outputView;
+    NSInteger mode;
 }
 
 - (IBAction)clearInput:(id)sender;
 - (IBAction)evalInput:(id)sender;
 - (IBAction)execInput:(id)sender;
+- (IBAction)segmentedControlChanged:(id)sender;
 
 @end
 

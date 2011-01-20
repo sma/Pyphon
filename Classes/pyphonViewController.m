@@ -18,6 +18,8 @@
 	inputView.text = @"print(3+4)";
     
     outputView.text = [Tester run];
+    
+    mode = 0;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -59,6 +61,11 @@
 	Parser *parser = [[Parser alloc] initWithString:inputView.text];
 	Expr *expr = [parser parse_test];
 	[parser release];
+    
+    if (mode) {
+        [self _appendStringToOutputView:[expr description]];
+        return;
+    }
 	
 	Frame *frame = [Frame newInitial];
 	frame.delegate = self;
@@ -74,11 +81,20 @@
 	Parser *parser = [[Parser alloc] initWithString:inputView.text];
 	Suite *suite = [parser parse_file];
 	[parser release];
+    
+    if (mode) {
+        [self _appendStringToOutputView:[suite description]];
+        return;
+    }
 	
 	Frame *frame = [Frame newInitial]; // TODO name does not match objc conventions
 	frame.delegate = self;
 	[suite execute:frame];
 	[frame release];
+}
+
+- (IBAction)segmentedControlChanged:(id)sender {
+    mode = ((UISegmentedControl *)sender).selectedSegmentIndex;
 }
 
 // PyphonDelegate callback (needs better name)
