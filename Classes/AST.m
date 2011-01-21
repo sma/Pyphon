@@ -1076,10 +1076,24 @@ static NSException *exception(NSString *name) {
 
 
 @implementation AddAssignStmt
+
+- (void)execute:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+	[leftExpr setValue:intValue(left + right) frame:frame];
+}
+
 @end
 
 
 @implementation SubAssignStmt
+
+- (void)execute:(Frame *)frame {
+    int left = asInt([leftExpr evaluate:frame]);
+    int right = asInt([rightExpr evaluate:frame]);
+	[leftExpr setValue:intValue(left - right) frame:frame];
+}
+
 @end
 
 
