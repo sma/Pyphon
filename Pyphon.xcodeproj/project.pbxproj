@@ -34,6 +34,8 @@
 		9370CF4412E6131F00C3F57D /* Token.m in Sources */ = {isa = PBXBuildFile; fileRef = 9338E42C12E360B40040049D /* Token.m */; };
 		9370CF4512E6132200C3F57D /* AST.m in Sources */ = {isa = PBXBuildFile; fileRef = 9338E42E12E360B40040049D /* AST.m */; };
 		9370CF4612E6132500C3F57D /* Runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 9338E43512E361CE0040049D /* Runtime.m */; };
+		93F51CBA12EA3DD600009090 /* button-highlight.png in Resources */ = {isa = PBXBuildFile; fileRef = 93F51CB812EA3DD600009090 /* button-highlight.png */; };
+		93F51CBB12EA3DD600009090 /* button.png in Resources */ = {isa = PBXBuildFile; fileRef = 93F51CB912EA3DD600009090 /* button.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +73,8 @@
 		9370CF3812E6122200C3F57D /* PyphonTests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PyphonTests-Prefix.pch"; sourceTree = "<group>"; };
 		9370CF4012E612C800C3F57D /* ASTTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASTTests.h; sourceTree = "<group>"; };
 		9370CF4112E612C800C3F57D /* ASTTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASTTests.m; sourceTree = "<group>"; };
+		93F51CB812EA3DD600009090 /* button-highlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-highlight.png"; sourceTree = "<group>"; };
+		93F51CB912EA3DD600009090 /* button.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +145,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				93F51CB812EA3DD600009090 /* button-highlight.png */,
+				93F51CB912EA3DD600009090 /* button.png */,
 				9338E65912E3AEC50040049D /* Icon.png */,
 				9338E65A12E3AEC50040049D /* Icon@2x.png */,
 				9338E64C12E3ADBC0040049D /* Default.png */,
@@ -289,6 +295,8 @@
 				9338E65B12E3AEC50040049D /* Icon.png in Resources */,
 				9338E65C12E3AEC50040049D /* Icon@2x.png in Resources */,
 				936143B012E7572B00C169D1 /* parsertests.py in Resources */,
+				93F51CBA12EA3DD600009090 /* button-highlight.png in Resources */,
+				93F51CBB12EA3DD600009090 /* button.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
