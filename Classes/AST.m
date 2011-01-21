@@ -33,6 +33,27 @@ static NSException *exception(NSString *name) {
     return [NSException exceptionWithName:name reason:@"" userInfo:nil];
 }
 
+static NSString *op(NSObject *object) {
+    NSString *name = NSStringFromClass([object class]);
+    return [name substringToIndex:[name length] - 4];
+}
+
+static NSString *descriptionForArray(NSArray *array) {
+    NSMutableString *buffer = [NSMutableString string];
+    [buffer appendString:@"["];
+    BOOL first = YES;
+    for (NSObject *object in array) {
+        if (first) {
+            first = NO;
+        } else {
+            [buffer appendString:@", "];
+        }
+        [buffer appendString:[object description]];
+    }
+    [buffer appendString:@"]"];
+    return buffer;
+}
+
 
 #pragma mark -
 #pragma mark --- expression nodes ---
@@ -69,13 +90,8 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
-- (NSString *)op {
-    [self doesNotRecognizeSelector:_cmd];
-    return nil;
-}
-
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@(%@, %@)", [self op], leftExpr, rightExpr];
+    return [NSString stringWithFormat:@"%@(%@, %@)", op(self), leftExpr, rightExpr];
 }
 
 @end
@@ -96,13 +112,8 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
-- (NSString *)op {
-    [self doesNotRecognizeSelector:_cmd];
-    return nil;
-}
-
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@(%@)", [self op], expr];
+    return [NSString stringWithFormat:@"%@(%@)", op(self), expr];
 }
 
 @end
@@ -148,10 +159,6 @@ static NSException *exception(NSString *name) {
     return [rightExpr evaluate:frame];
 }
 
-- (NSString *)op {
-    return @"Or";
-}
-
 @end
 
 
@@ -165,10 +172,6 @@ static NSException *exception(NSString *name) {
     return left;
 }
 
-- (NSString *)op {
-    return @"And";
-}
-
 @end
 
 
@@ -176,10 +179,6 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return boolValue(!nonZero([expr evaluate:frame]));
-}
-
-- (NSString *)op {
-    return @"Not";
 }
 
 @end
@@ -194,10 +193,6 @@ static NSException *exception(NSString *name) {
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedAscending);
 }
 
-- (NSString *)op {
-    return @"Lt";
-}
-
 @end
 
 
@@ -208,10 +203,6 @@ static NSException *exception(NSString *name) {
     NSObject *right = [rightExpr evaluate:frame];
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedDescending);
-}
-
-- (NSString *)op {
-    return @"Gt";
 }
 
 @end
@@ -226,10 +217,6 @@ static NSException *exception(NSString *name) {
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedDescending);   
 }
 
-- (NSString *)op {
-    return @"Le";
-}
-
 @end
 
 
@@ -240,10 +227,6 @@ static NSException *exception(NSString *name) {
     NSObject *right = [rightExpr evaluate:frame];
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedAscending);
-}
-
-- (NSString *)op {
-    return @"Ge";
 }
 
 @end
@@ -257,10 +240,6 @@ static NSException *exception(NSString *name) {
     return boolValue([left isEqual:right]);
 }
 
-- (NSString *)op {
-    return @"Eq";
-}
-
 @end
 
 
@@ -270,10 +249,6 @@ static NSException *exception(NSString *name) {
     NSObject *left = [leftExpr evaluate:frame];
     NSObject *right = [rightExpr evaluate:frame];
     return boolValue(![left isEqual:right]);
-}
-
-- (NSString *)op {
-    return @"Ne";
 }
 
 @end
@@ -293,10 +268,6 @@ static NSException *exception(NSString *name) {
     @throw exception(@"TypeError");
 }
 
-- (NSString *)op {
-    return @"In";
-}
-
 @end
 
 
@@ -306,10 +277,6 @@ static NSException *exception(NSString *name) {
     NSObject *left = [leftExpr evaluate:frame];
     NSObject *right = [rightExpr evaluate:frame];
     return boolValue(left == right);
-}
-
-- (NSString *)op {
-    return @"Is";
 }
 
 @end
@@ -323,10 +290,6 @@ static NSException *exception(NSString *name) {
     return intValue(left + right);
 }
 
-- (NSString *)op {
-    return @"Add";
-}
-
 @end
 
 
@@ -336,10 +299,6 @@ static NSException *exception(NSString *name) {
     int left = asInt([leftExpr evaluate:frame]);
     int right = asInt([rightExpr evaluate:frame]);
     return intValue(left - right);   
-}
-
-- (NSString *)op {
-    return @"Sub";
 }
 
 @end
@@ -353,10 +312,6 @@ static NSException *exception(NSString *name) {
     return intValue(left * right);
 }
 
-- (NSString *)op {
-    return @"Mul";
-}
-
 @end
 
 
@@ -366,10 +321,6 @@ static NSException *exception(NSString *name) {
     int left = asInt([leftExpr evaluate:frame]);
     int right = asInt([rightExpr evaluate:frame]);
     return intValue(left / right);
-}
-
-- (NSString *)op {
-    return @"Div";
 }
 
 @end
@@ -383,10 +334,6 @@ static NSException *exception(NSString *name) {
     return intValue(left % right);
 }
 
-- (NSString *)op {
-    return @"Mod";
-}
-
 @end
 
 
@@ -396,10 +343,6 @@ static NSException *exception(NSString *name) {
     return intValue(-asInt([expr evaluate:frame]));
 }
 
-- (NSString *)op {
-    return @"Neg";
-}
-
 @end
 
 
@@ -407,10 +350,6 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return intValue(+asInt([expr evaluate:frame]));
-}
-
-- (NSString *)op {
-    return @"Pos";
 }
 
 @end
@@ -446,6 +385,10 @@ static NSException *exception(NSString *name) {
 	return result;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Call(%@, %@)", expr, descriptionForArray(argumentExprs)];
+}
+
 @end
 
 
@@ -465,7 +408,6 @@ static NSException *exception(NSString *name) {
 	[subscriptExpr release];
 	[super dealloc];
 }
-
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *value = [expr evaluate:frame];
@@ -499,6 +441,10 @@ static NSException *exception(NSString *name) {
     @throw exception(@"TypeError");
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Index(%@, %@)", expr, subscriptExpr];
+}
+
 @end
 
 
@@ -521,6 +467,10 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return [Pyphon None]; // TODO implement getattr
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Attr(%@, %@)", expr, name];
 }
 
 @end
@@ -546,7 +496,7 @@ static NSException *exception(NSString *name) {
 }
 
 - (NSString *)description {
-    return [value description];
+    return [value __repr__];
 }
 
 @end
@@ -612,25 +562,8 @@ static NSException *exception(NSString *name) {
     }
 }
 
-- (NSString *)op {
-    return @"Tuple";
-}
-
 - (NSString *)description {
-    NSMutableString *buffer = [NSMutableString string];
-    [buffer appendString:[self op]];
-    [buffer appendString:@"("];
-    BOOL first = YES;
-    for (Expr *expr in exprs) {
-        if (first) {
-            first = NO;
-        } else {
-            [buffer appendString:@", "];
-        }
-        [buffer appendString:[expr description]];
-    }
-    [buffer appendString:@")"];
-    return buffer;
+    return [NSString stringWithFormat:@"%@(%@)", op(self), descriptionForArray(exprs)];
 }
 
 @end
@@ -646,10 +579,6 @@ static NSException *exception(NSString *name) {
 	return list;
 }
 
-- (NSString *)op {
-    return @"List";
-}
-
 @end
 
 
@@ -661,10 +590,6 @@ static NSException *exception(NSString *name) {
 		[set addObject:[expr evaluate:frame]];
 	}
 	return set; 
-}
-
-- (NSString *)op {
-    return @"Set";
 }
 
 @end
@@ -684,14 +609,9 @@ static NSException *exception(NSString *name) {
     return dictionary;
 }
 
-- (NSString *)op {
-    return @"Dict";
-}
-
 - (NSString *)description {
     NSMutableString *buffer = [NSMutableString string];
-    [buffer appendString:[self op]];
-    [buffer appendString:@"("];
+    [buffer appendString:@"Dict("];
     BOOL first = YES;
     for (NSArray *pair in exprs) {
         if (first) {
@@ -765,6 +685,10 @@ static NSException *exception(NSString *name) {
     return nil;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Suite%@", descriptionForArray(stmts)];
+}
+
 @end
 
 
@@ -795,6 +719,10 @@ static NSException *exception(NSString *name) {
     }
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"If(%@, %@, %@)", testExpr, thenSuite, elseSuite];
+}
+
 @end
 
 
@@ -822,6 +750,10 @@ static NSException *exception(NSString *name) {
         [whileSuite execute:frame];
     }
     [elseSuite execute:frame];
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"While(%@, %@, %@)", testExpr, whileSuite, elseSuite];
 }
 
 @end
@@ -858,6 +790,10 @@ static NSException *exception(NSString *name) {
 	[elseSuite execute:frame];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"For(%@, %@, %@, %@)", targetExpr, iterExpr, forSuite, elseSuite];
+}
+
 @end
 
 
@@ -885,6 +821,10 @@ static NSException *exception(NSString *name) {
     @finally {
         [finallySuite execute:frame];
     }
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"TryFinally(%@, %@)", trySuite, finallySuite];
 }
 
 @end
@@ -917,6 +857,10 @@ static NSException *exception(NSString *name) {
     [elseSuite execute:frame];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"TryExcept(%@, %@, %@)", trySuite, exceptClauses, elseSuite];
+}
+
 @end
 
 
@@ -937,6 +881,10 @@ static NSException *exception(NSString *name) {
 	[name release];
 	[suite release];
 	[super dealloc];
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"[%@, %@, %@]", exceptionsExpr, name, suite];
 }
 
 @end
@@ -969,6 +917,10 @@ static NSException *exception(NSString *name) {
     [frame setLocalValue:function forName:name];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Def(%@, %@, %@)", name, descriptionForArray(params), suite];
+}
+
 @end
 
 
@@ -991,6 +943,10 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Class(%@, %@, %@)", name, superExpr, suite];
+}
+
 @end
 
 
@@ -1003,6 +959,10 @@ static NSException *exception(NSString *name) {
 - (void)execute:(Frame *)frame {
 }
 
+- (NSString *)description {
+    return @"Pass()";
+}
+
 @end
 
 
@@ -1010,6 +970,10 @@ static NSException *exception(NSString *name) {
 
 + (Stmt *)stmt {
 	return [[[self alloc] init] autorelease];
+}
+
+- (NSString *)description {
+    return @"Break()";
 }
 
 @end
@@ -1030,6 +994,10 @@ static NSException *exception(NSString *name) {
 	[super dealloc];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Return(%@)", expr];
+}
+
 @end
 
 
@@ -1046,6 +1014,10 @@ static NSException *exception(NSString *name) {
 - (void)dealloc {
 	[expr release];
 	[super dealloc];
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Raise(%@)", expr];
 }
 
 @end
@@ -1070,6 +1042,10 @@ static NSException *exception(NSString *name) {
 
 - (void)execute:(Frame *)frame {
 	[leftExpr setValue:[rightExpr evaluate:frame] frame:frame];
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@(%@, %@)", op(self), leftExpr, rightExpr];
 }
 
 @end
@@ -1118,6 +1094,10 @@ static NSException *exception(NSString *name) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     return [expr evaluate:frame];
+}
+
+- (NSString *)description {
+    return [expr description];
 }
 
 @end
