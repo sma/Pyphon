@@ -59,8 +59,17 @@
 	[inputView resignFirstResponder];
 
 	Parser *parser = [[Parser alloc] initWithString:inputView.text];
-	Expr *expr = [parser parse_test];
-	[parser release];
+    Expr *expr;
+    @try {
+        expr = [parser parse_test];
+    }
+    @catch (NSException *exception) {
+        [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];
+        return;
+    }
+    @finally {
+        [parser release];
+    }
     
     if (mode) {
         [self _appendStringToOutputView:[expr description]];
@@ -69,18 +78,34 @@
 	
 	Frame *frame = [Frame newInitial];
 	frame.delegate = self;
-	NSString *result = [[expr evaluate:frame] __repr__];
-	[frame release];
-
-	[self _appendStringToOutputView:result];
+    @try {
+        NSString *result = [[expr evaluate:frame] __repr__];
+        [self _appendStringToOutputView:result];
+    }
+    @catch (NSException *exception) {
+        [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];
+        return;
+    }
+    @finally {
+        [frame release];
+    }
 }
 
 - (IBAction)execInput:(id)sender {
 	[inputView resignFirstResponder];
 	
 	Parser *parser = [[Parser alloc] initWithString:inputView.text];
-	Suite *suite = [parser parse_file];
-	[parser release];
+	Suite *suite;
+    @try {
+        suite = [parser parse_file];
+    }
+    @catch (NSException *exception) {
+        [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];
+        return;
+    }
+    @finally {
+        [parser release];
+    }
     
     if (mode) {
         [self _appendStringToOutputView:[suite description]];
@@ -89,8 +114,16 @@
 	
 	Frame *frame = [Frame newInitial]; // TODO name does not match objc conventions
 	frame.delegate = self;
-	[suite execute:frame];
-	[frame release];
+    @try {
+        [suite execute:frame];
+    }
+    @catch (NSException *exception) {
+        [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];
+        return;
+    }
+    @finally {
+        [frame release];
+    }
 }
 
 - (IBAction)segmentedControlChanged:(id)sender {
