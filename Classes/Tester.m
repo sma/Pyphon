@@ -26,16 +26,15 @@
         if ([line length] == 0 || [line characterAtIndex:0] == '#') {
             continue;
         }
-        if ([line length] > 3 && [[line substringToIndex:4] isEqualToString:@">>> "] ||
-            [line length] > 3 && [[line substringToIndex:4] isEqualToString:@"... "]) {
+        if ([line hasPrefix:@">>> "] || [line hasPrefix:@"... "]) {
             [buffer appendString:[line substringFromIndex:4]];
             [buffer appendString:@"\n"];
         } else {
             NSString *source = buffer;
             NSString *expected = line;
 
-            [report appendString:@"<div class='test'>"];
-            [report appendFormat:@"<pre class='source'>%@</pre>", source];
+            [report appendString:@"----------\n"];
+            [report appendString:source];
             
             Parser *p = [[Parser alloc] initWithString:source];
             Suite *s = [p parse_file];
@@ -48,17 +47,17 @@
                 NSString *actual = [[s evaluate:f] __repr__];
 
                 if ([actual isEqualToString:expected]) {
-                    [report appendString:@"<div class='success'>OK</div>"];
+                    [report appendString:@"\nOK\n"];
                 } else {
-                    [report appendString:@"<div class='failure'>Actual: "];
+                    [report appendString:@"\nActual  : "];
                     [report appendString:actual];
                     [report appendString:@"\nExpected: "];
                     [report appendString:expected];
-                    [report appendString:@"</pre>"];
+                    [report appendString:@"\n"];
                 }
             }
             @catch (NSException *exception) {
-                [report appendFormat:@"<div class='failure'>%@: %@</div>", exception.name, exception.reason];
+                [report appendFormat:@"\n%@: %@\n", exception.name, exception.reason];
             }
             
             [f release];
