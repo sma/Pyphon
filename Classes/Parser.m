@@ -49,21 +49,22 @@
 }
 
 /**
+ * Raises a SyntaxError exception with the given message.
+ */
+- (id)error:(NSString *)message {
+	@throw [NSException exceptionWithName:@"SyntaxError" reason:message userInfo:nil]; 
+}
+
+/**
  * Raises an exception if the current token does not match the given one.
  * Otherwise consume the token and advance to the next token.
  */
 - (void)expect:(NSString *)token {
 	if (![self at:token]) {
-		NSLog(@"ERROR: expected %@ but found %@", token, [self token]);
+        [self error:[NSString stringWithFormat:@"expected %@ but found %@", 
+                     token, 
+                     [[self token] stringValue]]];
 	}
-}
-
-/**
- * Raises an exception.
- */
-- (id)error:(NSString *)message {
-	// TODO
-	@throw [NSException exceptionWithName:@"SyntaxError" reason:message userInfo:nil]; 
 }
 
 //////////////
@@ -107,7 +108,7 @@
 - (Expr *)parse_testlist_as_tuple {
 	Expr *expr = [self parse_testlist_opt_as_tuple];
 	if (!expr) {
-		[self error:@"expression expected"];
+		[self error:@"expected expression"];
 	}
 	return expr;
 }
@@ -121,7 +122,7 @@
 		[self advance];
 		return string;
 	}
-	return [self error:@"NAME expected"]; 
+	return [self error:@"expected NAME"]; 
 }
 
 // subscript: test | [test] ':' [test] [':' [test]]
