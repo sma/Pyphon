@@ -10,6 +10,10 @@
 
 @implementation Parser
 
+
+#pragma mark Initialisation
+
+
 - (id)initWithString:(NSString *)source {
 	if ((self = [self init])) {
 		tokens = [[Token tokenizeString:source] retain];
@@ -17,6 +21,57 @@
 	}
 	return self;
 }
+
+- (void)dealloc {
+    [tokens release];
+    [super dealloc];
+}
+
+/**
+ * Returns YES if the given string a Python keyword.
+ */
++ (BOOL)isKeyword:(NSString *)string {
+    static NSSet *keywords = nil;
+    if (!keywords) {
+        keywords = [[NSSet alloc] initWithObjects:
+                    @"and",
+                    @"as",
+                    @"assert",
+                    @"break",
+                    @"class",
+                    @"continue",
+                    @"def",
+                    @"del",
+                    @"elif",
+                    @"else",
+                    @"except",
+                    @"exec",
+                    @"finally",
+                    @"for",
+                    @"from",
+                    @"global",
+                    @"if",
+                    @"import",
+                    @"in",
+                    @"is",
+                    @"lambda",
+                    @"not",
+                    @"or",
+                    @"pass",
+                    @"raise",
+                    @"return",
+                    @"try",
+                    @"while",
+                    @"with",
+                    @"yield",
+                    nil];
+    }
+    return [keywords containsObject:string];
+}
+
+
+#pragma mark Parsing helpers
+
 
 /**
  * Returns the current token.
@@ -30,15 +85,15 @@
 }
 
 /**
- * Makes the next token the new current token.
+ * Advance to the next token, making it the new current token.
  */
 - (void)advance {
 	index += 1;
 }
 
 /**
- * Returns YES if the current token matches the given one and advances to the 
- * next token or returns NO and keeps the current token.
+ * Returns YES if the current token matches the given one and consumes it
+ * or returns NO and keeps the current token.
  */
 - (BOOL)at:(NSString *)token {
 	if ([[self token] isEqualToString:token]) {
@@ -52,6 +107,10 @@
  * Raises a SyntaxError exception with the given message.
  */
 - (id)error:(NSString *)message {
+    message = [NSString stringWithFormat:@"%@ but found %@ in line %d",
+               message,
+               [[self token] stringValue],
+               [[self token] lineNumber]];
 	@throw [NSException exceptionWithName:@"SyntaxError" reason:message userInfo:nil]; 
 }
 
@@ -61,17 +120,21 @@
  */
 - (void)expect:(NSString *)token {
 	if (![self at:token]) {
-        [self error:[NSString stringWithFormat:@"expected %@ but found %@", 
-                     token, 
-                     [[self token] stringValue]]];
+        [self error:[NSString stringWithFormat:@"expected %@", token]];
 	}
 }
 
-//////////////
 
+#pragma mark Expression list parsing
+
+
+/**
+ * Returns YES if the current token seems to be the beginning of a test expression.
+ */
 - (BOOL)has_test {
-	unichar ch = [[[self token] stringValue] characterAtIndex:0];
-	return isalnum(ch) || ch == '+' || ch == '-' || ch == '(' || ch == '[' || ch == '{' || ch == '"' || ch == '\'' || ch == '_';
+    NSString *token = [[self token] stringValue];
+	unichar ch = [token characterAtIndex:0];
+	return isalnum(ch) && ![Parser isKeyword:token] || strchr("+-([{\"'_", ch);
 }
 
 // testlist: test {',' test} [',']
@@ -89,38 +152,30 @@
 	return exprs;
 }
 
-- (Expr *)parse_testlist_opt_as_tuple {
-	if (![self has_test]) {
-		return nil;
-	}
+// testlist: test {',' test} [',']
+- (Expr *)parse_testlist_as_tuple {
 	Expr *expr = [self parse_test];
 	if (![self at:@","]) {
 		return expr;
 	}
 	NSMutableArray *exprs = [NSMutableArray arrayWithObject:expr];
-	if (![self has_test]) {
-		return [TupleExpr withExprs:exprs];
-	}
-	[exprs addObjectsFromArray:[self parse_testlist_opt]];
+	if ([self has_test]) {
+        [exprs addObjectsFromArray:[self parse_testlist_opt]];
+    }
 	return [TupleExpr withExprs:exprs];
 }
 
-- (Expr *)parse_testlist_as_tuple {
-	Expr *expr = [self parse_testlist_opt_as_tuple];
-	if (!expr) {
-		[self error:@"expected expression"];
-	}
-	return expr;
-}
 
-//////////////
+#pragma mark Expression parsing
 
-- (NSString *)parse_name {
-	NSString *string = [[self token] stringValue];
-	unichar ch = [string characterAtIndex:0];
-	if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_') {
+
+// NAME
+- (NSString *)parse_NAME {
+	NSString *name = [[self token] stringValue];
+	unichar ch = [name characterAtIndex:0];
+	if (isalpha(ch) && ![Parser isKeyword:name] || ch == '_') {
 		[self advance];
-		return string;
+		return name;
 	}
 	return [self error:@"expected NAME"]; 
 }
@@ -134,22 +189,22 @@
 			return start;
 		}
 	} else {
-		start = [LiteralExpr withValue:nil];
+		start = [LiteralExpr withValue:[Pyphon None]];
 		[self expect:@":"];
 	}
 	if ([self has_test]) {
 		stop = [self parse_test];
 	} else {
-		stop = [LiteralExpr withValue:nil];
+		stop = [LiteralExpr withValue:[Pyphon None]];
 	}
 	if ([self at:@":"]) {
 		if ([self has_test]) {
 			step = [self parse_test];
 		} else {
-			step = [LiteralExpr withValue:nil];
+			step = [LiteralExpr withValue:[Pyphon None]];
 		}
 	} else {
-		step = [LiteralExpr withValue:nil];
+		step = [LiteralExpr withValue:[Pyphon None]];
 	}
 	return [CallExpr withExpr:[VariableExpr withName:@"slice"]
 			withArgumentExprs:[NSArray arrayWithObjects:start, stop, step, nil]];
@@ -226,8 +281,7 @@
 	}
 	if (isdigit(ch)) {
 		[self advance];
-		NSNumber *value = [NSNumber numberWithInteger:[tokenValue integerValue]];
-		return [LiteralExpr withValue:value];
+		return [LiteralExpr withValue:[NSNumber numberWithInteger:[tokenValue integerValue]]];
 	}
 	if (ch == '"' || ch == '\'') {
 		NSMutableString *s = [NSMutableString string];
@@ -253,7 +307,7 @@
 			expr = [IndexExpr withExpr:expr withSubscriptExpr:[self parse_subscript]];
 			[self expect:@"]"];
 		} else if ([self at:@"."]) {
-			expr = [AttrExpr withExpr:expr withName:[self parse_name]];
+			expr = [AttrExpr withExpr:expr withName:[self parse_NAME]];
 		} else {
 			break;
 		}
@@ -365,10 +419,14 @@
 	return expr;
 }
 
+
+#pragma mark Simple statement parsing
+
+
 // expr_stmt: testlist [('+=' | '-=' | '*=' | '/=' | '%=' | '=') testlist]
 - (Stmt *)parse_expr_stmt {
-	Expr *expr = [self parse_testlist_opt_as_tuple];
-	if (expr) {
+    if ([self has_test]) {
+        Expr *expr = [self parse_testlist_as_tuple];
 		if ([self at:@"="]) return [AssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
 		if ([self at:@"+="]) return [AddAssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
 		if ([self at:@"-="]) return [SubAssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
@@ -383,10 +441,7 @@
 	if ([self at:@"pass"]) return [PassStmt stmt];
 	if ([self at:@"break"]) return [BreakStmt stmt];
 	if ([self at:@"return"]) {
-		Expr *expr = [self parse_testlist_opt_as_tuple];
-		if (!expr) {
-			expr = [LiteralExpr withValue:nil];
-		}
+        Expr *expr = [self has_test] ? [self parse_testlist_as_tuple] : [LiteralExpr withValue:[Pyphon None]];
 		return [ReturnStmt withExpr:expr];
 	}
 	if ([self at:@"raise"]) {
@@ -407,6 +462,10 @@
 	[self expect:@"\n"];
 	return stmts;
 }
+
+
+#pragma mark Compount statement parsing
+
 
 //private: ['else' ':' suite]
 - (Suite *)parse_else {
@@ -478,7 +537,7 @@
 	if (![self at:@":"]) {
 		exceptionsExpr = [self parse_test];
 		if ([self at:@"as"]) {
-			name = [self parse_name];
+			name = [self parse_NAME];
 		}
 		[self expect:@":"];
 	}
@@ -508,12 +567,12 @@
 	if ([self at:@")"]) {
 		return params;
 	}
-	[params addObject:[self parse_name]];
+	[params addObject:[self parse_NAME]];
 	while ([self at:@","]) {
 		if ([self at:@")"]) {
 			return params;
 		}
-		[params addObject:[self parse_name]];
+		[params addObject:[self parse_NAME]];
 	}
 	[self expect:@")"];
 	return params;
@@ -521,7 +580,7 @@
 
 // funcdef: 'def' NAME parameters ':' suite
 - (Stmt *)parse_funcdef {
-	NSString *name = [self parse_name];
+	NSString *name = [self parse_NAME];
 	NSArray *params = [self parse_parameters];
 	[self expect:@":"];
 	return [DefStmt withName:name params:params suite:[self parse_suite]];
@@ -529,7 +588,7 @@
 
 // classdef: 'class' NAME ['(' [test] ')'] ':' suite
 - (Stmt *)parse_classdef {
-	NSString *name = [self parse_name];
+	NSString *name = [self parse_NAME];
 	Expr *superExpr = nil;
 	if ([self at:@"("]) {
 		if ([self at:@")"]) {
@@ -562,6 +621,10 @@
 	}
 	return [self parse_simple_stmt];
 }
+
+
+#pragma mark Suite parsing
+
 
 // suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
 - (Suite *)parse_suite {
