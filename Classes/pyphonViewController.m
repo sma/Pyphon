@@ -26,6 +26,25 @@
     return YES;
 }
 
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    UIView *buttonsView = [self.view.subviews objectAtIndex:1];
+    UIView *segmentedControlView = [buttonsView.subviews lastObject];
+    
+    if (toInterfaceOrientation == UIInterfaceOrientationLandscapeLeft ||
+        toInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+        inputView.frame = CGRectMake(5, 5, 470, 90);
+        buttonsView.frame =CGRectMake(5, 100, 470, 45);
+        segmentedControlView.frame = CGRectMake(300, 8, 170, 30);
+        outputView.frame = CGRectMake(5, 145, 470, 150);
+    } else {
+        inputView.frame = CGRectMake(5, 5, 310, 120);
+        buttonsView.frame =CGRectMake(40, 130, 240, 75);
+        segmentedControlView.frame = CGRectMake(3, 45, 234, 30);
+        outputView.frame = CGRectMake(5, 210, 310, 245);
+    }
+}
+
 - (void)didReceiveMemoryWarning {
 	// Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
