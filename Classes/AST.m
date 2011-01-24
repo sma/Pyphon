@@ -66,8 +66,9 @@ static NSString *descriptionForArray(NSArray *array) {
 	return nil;
 }
 
-- (void)setValue:(NSObject *)value frame:(Frame *)frame {
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame {
 	[self doesNotRecognizeSelector:_cmd];
+    return nil;
 }
 
 @end
@@ -139,7 +140,13 @@ static NSString *descriptionForArray(NSArray *array) {
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return [(nonZero([testExpr evaluate:frame]) ? thenExpr : elseExpr) evaluate:frame];
+    NSObject *test = [testExpr evaluate:frame];
+    
+    if (test == kReturning) {
+        return test;
+    }
+    
+    return [(nonZero(test) ? thenExpr : elseExpr) evaluate:frame];
 }
 
 - (NSString *)description {
@@ -153,9 +160,15 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     if (nonZero(left)) {
         return left;
     }
+    
     return [rightExpr evaluate:frame];
 }
 
@@ -166,9 +179,15 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     if (nonZero(left)) {
         return [rightExpr evaluate:frame];
     }
+    
     return left;
 }
 
@@ -178,7 +197,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation NotExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return boolValue(!nonZero([expr evaluate:frame]));
+    NSObject *value = [expr evaluate:frame];
+    
+    if (value == kReturning) {
+        return value;
+    }
+    
+    return boolValue(!nonZero(value));
 }
 
 @end
@@ -188,7 +213,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedAscending);
 }
@@ -200,7 +235,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] == NSOrderedDescending);
 }
@@ -212,7 +257,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedDescending);   
 }
@@ -224,7 +279,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     // TODO can we conform to a protocol instead of casting?
     return boolValue([(NSNumber *)left compare:(NSNumber *)right] != NSOrderedAscending);
 }
@@ -236,7 +301,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     return boolValue([left isEqual:right]);
 }
 
@@ -247,7 +322,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     return boolValue(![left isEqual:right]);
 }
 
@@ -258,13 +343,25 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     if ([right respondsToSelector:@selector(containsObject:)]) {
         return boolValue([(NSArray *)right containsObject:left]);
     }
     if ([right isKindOfClass:[NSString class]]) {
         return boolValue([(NSString *)right rangeOfString:(NSString *)left].location != NSNotFound);
     }
+    
+    // TODO implement Python Exceptions
     @throw exception(@"TypeError");
 }
 
@@ -275,7 +372,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
     NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
     NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
     return boolValue(left == right);
 }
 
@@ -285,9 +392,19 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation AddExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-    return intValue(left + right);
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+    return intValue(asInt(left) + asInt(right));
 }
 
 @end
@@ -296,9 +413,19 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation SubExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-    return intValue(left - right);   
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+    return intValue(asInt(left) - asInt(right));
 }
 
 @end
@@ -307,9 +434,20 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation MulExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-    return intValue(left * right);
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+    return intValue(asInt(left) * asInt(right));
+
 }
 
 @end
@@ -318,9 +456,20 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation DivExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-    return intValue(left / right);
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+    return intValue(asInt(left) / asInt(right));
+
 }
 
 @end
@@ -329,9 +478,19 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ModExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-    return intValue(left % right);
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+    return intValue(asInt(left) % asInt(right));
 }
 
 @end
@@ -340,7 +499,11 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation NegExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return intValue(-asInt([expr evaluate:frame]));
+    NSObject *value = [expr evaluate:frame];
+    if (value == kReturning) {
+        return value;
+    }
+    return intValue(-asInt(value));
 }
 
 @end
@@ -349,7 +512,11 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation PosExpr
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return intValue(+asInt([expr evaluate:frame]));
+    NSObject *value = [expr evaluate:frame];
+    if (value == kReturning) {
+        return value;
+    }
+    return intValue(+asInt(value));
 }
 
 @end
@@ -373,14 +540,26 @@ static NSString *descriptionForArray(NSArray *array) {
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-	NSObject *function = [expr evaluate:frame];
+	NSObject *func = [expr evaluate:frame];
+    
+    if (func == kReturning) {
+        return func;
+    }
+    
 	NSUInteger count = [argumentExprs count];
 	NSMutableArray *arguments = [[NSMutableArray alloc] initWithCapacity:count];
 	for (NSUInteger i = 0; i < count; i++) {
-		[arguments addObject:[[argumentExprs objectAtIndex:i] evaluate:frame]];
+        NSObject *value = [[argumentExprs objectAtIndex:i] evaluate:frame];
+        
+        if (value == kReturning) {
+            return value;
+        }
+        
+		[arguments addObject:value];
 	}
-	// TODO need to use a protocol here
-	NSObject *result = [(Function *)function callWithArray:arguments frame:frame];
+
+	// TODO should use a protocol here
+	NSObject *result = [(Function *)func callWithArray:arguments frame:frame];
 	[arguments release];
 	return result;
 }
@@ -410,34 +589,86 @@ static NSString *descriptionForArray(NSArray *array) {
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-    NSObject *value = [expr evaluate:frame];
+    NSObject *target = [expr evaluate:frame];
     
-    if ([value isKindOfClass:[NSString class]]) {
-        NSString *stringValue = (NSString *)value;
-        int index = asInt([subscriptExpr evaluate:frame]); //TODO could be a slice
+    if (target == kReturning) {
+        return target;
+    }
+    
+    NSObject *subscript = [subscriptExpr evaluate:frame];
+    
+    if (subscript == kReturning) {
+        return subscript;
+    }
+    
+    if ([target isKindOfClass:[NSString class]]) {
+        NSString *string = (NSString *)target;
+
+        int index = asInt(subscript); //TODO could be a slice
         if (index < 0) {
-            index += [stringValue length];
+            index += [string length];
         }
-        if (index < 0 || index >= [stringValue length]) {
+        if (index < 0 || index >= [string length]) {
             @throw exception(@"IndexError");
         }
-        return [stringValue substringWithRange:NSMakeRange(index, 1)];
+        
+        return [string substringWithRange:NSMakeRange(index, 1)];
     }
-    if ([value respondsToSelector:@selector(objectAtIndex:)]) {
-        NSArray *arrayValue = (NSArray *)value;
-        int index = asInt([subscriptExpr evaluate:frame]); //TODO could be a slice
+    
+    if ([target respondsToSelector:@selector(objectAtIndex:)]) {
+        NSArray *list = (NSArray *)target;
+        int index = asInt(subscript); //TODO could be a slice
         if (index < 0) {
-            index += [arrayValue count];
+            index += [list count];
         }
-        if (index < 0 || index >= [arrayValue count]) {
+        if (index < 0 || index >= [list count]) {
             @throw exception(@"IndexError");
         }
-        return [arrayValue objectAtIndex:index];
+        return [list objectAtIndex:index];
     }
-    if ([value respondsToSelector:@selector(objectForKey:)]) {
-        NSDictionary *dictionaryValue = (NSDictionary *)value;
-        return [dictionaryValue objectForKey:[subscriptExpr evaluate:frame]];
+    
+    if ([target respondsToSelector:@selector(objectForKey:)]) {
+        NSDictionary *dict = (NSDictionary *)target;
+        return [dict objectForKey:subscript];
     }
+    
+    // TODO Python Exceptions
+    @throw exception(@"TypeError");
+}
+
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame {
+    NSObject *target = [expr evaluate:frame];
+    
+    if (target == kReturning) {
+        return target;
+    }
+    
+    NSObject *subscript = [subscriptExpr evaluate:frame];
+    
+    if (subscript == kReturning) {
+        return subscript;
+    }
+    
+    if ([target respondsToSelector:@selector(replaceObjectAtIndex:withObject:)]) {
+        NSMutableArray *list = (NSMutableArray *)target;
+        int index = asInt(subscript);
+        if (index < 0) {
+            index += [list count];
+        }
+        if (index < 0 || index >= [list count]) {
+            @throw exception(@"IndexError");
+        }
+        [list replaceObjectAtIndex:index withObject:value];
+        return nil;
+    }
+    
+    if ([target respondsToSelector:@selector(setObject:forKey:)]) {
+        NSMutableDictionary *dict = (NSMutableDictionary *)target;
+        [dict setObject:value forKey:target];
+        return nil;
+    }
+    
+    // TODO Python Exceptions
     @throw exception(@"TypeError");
 }
 
@@ -466,7 +697,24 @@ static NSString *descriptionForArray(NSArray *array) {
 }
 
 - (NSObject *)evaluate:(Frame *)frame {
-    return [Pyphon None]; // TODO implement getattr
+    NSObject *value = [expr evaluate:frame];
+    
+    if (value == kReturning) {
+        return value;
+    }
+    
+    return [value valueForKey:name];
+}
+
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame {
+    NSObject *val = [expr evaluate:frame];
+    
+    if (val == kReturning) {
+        return val;
+    }
+    
+    [val setValue:value forKey:name];
+    return nil;
 }
 
 - (NSString *)description {
@@ -521,8 +769,9 @@ static NSString *descriptionForArray(NSArray *array) {
 	return [frame localValueForName:name];
 }
 
-- (void)setValue:(NSObject *)value frame:(Frame *)frame {
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame {
 	[frame setLocalValue:value forName:name];
+    return nil;
 }
 
 - (NSString *)description {
@@ -549,17 +798,29 @@ static NSString *descriptionForArray(NSArray *array) {
 
 - (NSObject *)evaluate:(Frame *)frame {
 	NSMutableArray *tuple = [NSMutableArray arrayWithCapacity:[exprs count]];
+    
 	for (Expr *expr in exprs) {
-		[tuple addObject:[expr evaluate:frame]];
+        NSObject *value = [expr evaluate:frame];
+        
+        if (value == kReturning) {
+            return value;
+        }
+        
+		[tuple addObject:value];
 	}
+    
 	return [NSArray arrayWithArray:tuple];
 }
 
-- (void)setValue:(NSObject *)value frame:(Frame *)frame {
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame {
     NSArray *tuple = (NSArray *)value;
     for (NSUInteger i = 0; i < [exprs count]; i++) {
-        [[exprs objectAtIndex:i] setValue:[tuple objectAtIndex:i] frame:frame];
+        NSObject *result = [[exprs objectAtIndex:i] setValue:[tuple objectAtIndex:i] frame:frame];
+        if (result == kReturning) {
+            return result;
+        }
     }
+    return nil;
 }
 
 - (NSString *)description {
@@ -574,7 +835,13 @@ static NSString *descriptionForArray(NSArray *array) {
 - (NSObject *)evaluate:(Frame *)frame {
 	NSMutableArray *list = [NSMutableArray arrayWithCapacity:[exprs count]];
 	for (Expr *expr in exprs) {
-		[list addObject:[expr evaluate:frame]];
+		NSObject *value = [expr evaluate:frame];
+        
+        if (value == kReturning) {
+            return value;
+        }
+        
+		[list addObject:value];
 	}
 	return list;
 }
@@ -587,7 +854,13 @@ static NSString *descriptionForArray(NSArray *array) {
 - (NSObject *)evaluate:(Frame *)frame {
 	NSMutableSet *set = [NSMutableSet setWithCapacity:[exprs count]];
 	for (Expr *expr in exprs) {
-		[set addObject:[expr evaluate:frame]];
+		NSObject *value = [expr evaluate:frame];
+        
+        if (value == kReturning) {
+            return value;
+        }
+        
+		[set addObject:value];
 	}
 	return set; 
 }
@@ -603,7 +876,13 @@ static NSString *descriptionForArray(NSArray *array) {
         Expr *keyExpr = [pair objectAtIndex:0];
         Expr *valueExpr = [pair objectAtIndex:1];
         NSObject *key = [keyExpr evaluate:frame];
+        if (key == kReturning) {
+            return key;
+        }
         NSObject *value = [valueExpr evaluate:frame];
+        if (value == kReturning) {
+            return value;
+        }
         [dictionary setObject:value forKey:key];
     }
     return dictionary;
@@ -638,8 +917,9 @@ static NSString *descriptionForArray(NSArray *array) {
 
 @implementation Stmt
 
-- (void)execute:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	[self doesNotRecognizeSelector:_cmd];
+    return nil;
 }
 
 @end
@@ -668,21 +948,15 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-	for (Stmt *stmt in stmts) {
-		[stmt execute:frame];
-	}
-}
-
 - (NSObject *)evaluate:(Frame *)frame {
-    if ([[stmts lastObject] isKindOfClass:[ExprStmt class]]) {
-        for (int i = 0; i < [stmts count] - 1; i++) {
-            [[stmts objectAtIndex:i] execute:frame];
+    NSObject *result = nil;
+    for (Stmt *stmt in stmts) {
+        result = [stmt evaluate:frame];
+        if (result == kReturning) {
+            return result;
         }
-        return [(ExprStmt *)[stmts lastObject] evaluate:frame];
     }
-    [self execute:frame];
-    return nil;
+    return result;
 }
 
 - (NSString *)description {
@@ -711,11 +985,17 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-    if (nonZero([testExpr evaluate:frame])) {
-        [thenSuite execute:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *test = [testExpr evaluate:frame];
+    
+    if (test == kReturning) {
+        return test;
+    }
+    
+    if (nonZero(test)) {
+        return [thenSuite evaluate:frame];
     } else {
-        [elseSuite execute:frame];
+        return [elseSuite evaluate:frame];
     }
 }
 
@@ -745,11 +1025,27 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-    while (nonZero([testExpr evaluate:frame])) {
-        [whileSuite execute:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    while (YES) {
+        NSObject *test = [testExpr evaluate:frame];
+        if (test == kReturning) {
+            return test;
+        }
+        
+        if (!nonZero(test)) {
+            break;
+        }
+        
+        NSObject *result = [whileSuite evaluate:frame];
+        if (result == kReturning) {
+            if (frame.returnType == kBreak) {
+                return nil;
+            }
+            return result;
+        }
     }
-    [elseSuite execute:frame];
+    
+    return [elseSuite evaluate:frame];
 }
 
 - (NSString *)description {
@@ -780,14 +1076,33 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
 	// TODO need to create an iterator
-	for (NSObject *value in (id<NSFastEnumeration>)[iterExpr evaluate:frame]) {
-		[targetExpr setValue:value frame:frame];
-		// TODO implement break
-		[forSuite execute:frame];
+    NSObject *iter = [iterExpr evaluate:frame];
+    
+    if (iter == kReturning) {
+        return iter;
+    }
+    
+	for (NSObject *value in (id<NSFastEnumeration>)iter) {
+		NSObject *result;
+        
+        // should never happen because target of `for` may not be Attr/Index
+        result = [targetExpr setValue:value frame:frame];
+        if (result == kReturning) {
+            return result;
+        }
+		
+        result = [forSuite evaluate:frame];
+        if (result == kReturning) {
+            if (frame.returnType == kBreak) {
+                return nil;
+            }
+            return result;
+        }
 	}
-	[elseSuite execute:frame];
+	
+    return [elseSuite evaluate:frame];
 }
 
 - (NSString *)description {
@@ -814,13 +1129,11 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-    @try {
-        [trySuite execute:frame];
-    }
-    @finally {
-        [finallySuite execute:frame];
-    }
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *result1 = [trySuite evaluate:frame];
+    NSObject *result2 = [finallySuite evaluate:frame];
+    
+    return result2 == kReturning ? result2 : result1;
 }
 
 - (NSString *)description {
@@ -846,15 +1159,19 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-    @try {
-        [trySuite execute:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *result = [trySuite evaluate:frame];
+    if (result == kReturning) {
+        if (frame.returnType == kException) {
+            for (ExceptClause *exceptClause in exceptClauses) {
+                if ([exceptClause matches:frame]) {
+                    return [exceptClause evaluate:frame];
+                }
+            }
+        }
+        return result;
     }
-    @catch (NSException *exception) {
-        // TODO
-        @throw exception;
-    }
-    [elseSuite execute:frame];
+    return [elseSuite evaluate:frame];
 }
 
 - (NSString *)description {
@@ -883,6 +1200,18 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
+- (BOOL)matches:(Frame *)frame {
+    return YES; // TODO implement exception matching
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    if (name) {
+        [frame setLocalValue:frame.returnValue forName:name];
+    }
+    return [suite evaluate:frame];
+}
+
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"[%@, %@, %@]", exceptionsExpr, name, suite];
 }
@@ -909,12 +1238,13 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
     Function *function = [Function withName:name 
                                      params:params 
                                       suite:suite 
                                     globals:[frame globals]];
     [frame setLocalValue:function forName:name];
+    return nil;
 }
 
 - (NSString *)description {
@@ -943,6 +1273,8 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
+// TODO evaluate missing
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"Class(%@, %@, %@)", name, superExpr, suite];
 }
@@ -956,7 +1288,8 @@ static NSString *descriptionForArray(NSArray *array) {
 	return [[[self alloc] init] autorelease];
 }
 
-- (void)execute:(Frame *)frame {
+- (NSObject *)evaluate:(Frame *)frame {
+    return nil;
 }
 
 - (NSString *)description {
@@ -970,6 +1303,11 @@ static NSString *descriptionForArray(NSArray *array) {
 
 + (Stmt *)stmt {
 	return [[[self alloc] init] autorelease];
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    frame.returnType = kBreak;
+    return kReturning;
 }
 
 - (NSString *)description {
@@ -994,6 +1332,18 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *result = [expr evaluate:frame];
+    
+    if (result == kReturning) {
+        return result;
+    }
+    
+    frame.returnType = kReturn;
+    frame.returnValue = result;
+    return kReturning;
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"Return(%@)", expr];
 }
@@ -1014,6 +1364,18 @@ static NSString *descriptionForArray(NSArray *array) {
 - (void)dealloc {
 	[expr release];
 	[super dealloc];
+}
+
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *result = [expr evaluate:frame];
+    
+    if (result == kReturning) {
+        return result;
+    }
+    
+    frame.returnType = kException;
+    frame.returnValue = result;
+    return kReturning;
 }
 
 - (NSString *)description {
@@ -1040,8 +1402,14 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-	[leftExpr setValue:[rightExpr evaluate:frame] frame:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+	return [leftExpr setValue:right frame:frame];
 }
 
 - (NSString *)description {
@@ -1053,10 +1421,20 @@ static NSString *descriptionForArray(NSArray *array) {
 
 @implementation AddAssignStmt
 
-- (void)execute:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-	[leftExpr setValue:intValue(left + right) frame:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+	return [leftExpr setValue:intValue(asInt(left) + asInt(right)) frame:frame];
 }
 
 @end
@@ -1064,10 +1442,20 @@ static NSString *descriptionForArray(NSArray *array) {
 
 @implementation SubAssignStmt
 
-- (void)execute:(Frame *)frame {
-    int left = asInt([leftExpr evaluate:frame]);
-    int right = asInt([rightExpr evaluate:frame]);
-	[leftExpr setValue:intValue(left - right) frame:frame];
+- (NSObject *)evaluate:(Frame *)frame {
+    NSObject *left = [leftExpr evaluate:frame];
+    
+    if (left == kReturning) {
+        return left;
+    }
+    
+    NSObject *right = [rightExpr evaluate:frame];
+    
+    if (right == kReturning) {
+        return right;
+    }
+    
+	return [leftExpr setValue:intValue(asInt(left) - asInt(right)) frame:frame];
 }
 
 @end
@@ -1088,12 +1476,8 @@ static NSString *descriptionForArray(NSArray *array) {
 	[super dealloc];
 }
 
-- (void)execute:(Frame *)frame {
-	[expr evaluate:frame];
-}
-
 - (NSObject *)evaluate:(Frame *)frame {
-    return [expr evaluate:frame];
+	return [expr evaluate:frame];
 }
 
 - (NSString *)description {

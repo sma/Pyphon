@@ -17,7 +17,7 @@
 }
 
 - (NSObject *)evaluate:(Frame *)frame;
-- (void)setValue:(NSObject *)value frame:(Frame *)frame;
+- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame;
 
 @end
 
@@ -220,7 +220,7 @@
 @interface Stmt : NSObject { /* abstract */
 }
 
-- (void)execute:(Frame *)frame;
+- (NSObject *)evaluate:(Frame *)frame;
 
 @end
 
@@ -233,7 +233,6 @@
 + (Suite *)withStmt:(Stmt *)stmt;
 + (Suite *)withStmts:(NSArray *)stmts;
 
-- (void)execute:(Frame *)frame;
 - (NSObject *)evaluate:(Frame *)frame;
 
 @end
@@ -301,6 +300,9 @@
 }
 
 + (ExceptClause *)withExceptionsExpr:(Expr *)exceptionsExpr name:(NSString *)name suite:(Suite *)suite;
+
+- (BOOL)matches:(Frame *)frame;
+- (NSObject *)evaluate:(Frame *)frame;
 
 @end
 

@@ -9,6 +9,13 @@
 #import <Foundation/Foundation.h>
 
 
+enum { kReturn, kBreak, kException };
+typedef NSInteger ReturnType;
+
+
+extern NSObject *kReturning;
+
+
 @interface Pyphon : NSObject
 
 + (NSObject *)True;
@@ -29,9 +36,13 @@
 	NSMutableDictionary *locals;
 	NSMutableDictionary *globals;
 	id<PyphonDelegate> delegate;
+    ReturnType returnType;
+    NSObject *returnValue;
 }
 
-@property(nonatomic,assign) id<PyphonDelegate> delegate;
+@property(nonatomic, assign) id<PyphonDelegate> delegate;
+@property(nonatomic, assign) ReturnType returnType;
+@property(nonatomic, retain) NSObject *returnValue;
 
 + (Frame *)newInitial;
 - (Frame *)initWithLocals:(NSMutableDictionary *)locals globals:(NSMutableDictionary *)globals;

@@ -9,6 +9,9 @@
 #import "Runtime.h"
 
 
+NSObject *kReturning = @"Returning";
+
+
 @implementation Pyphon
 
 + (NSObject *)True {
@@ -41,6 +44,8 @@
 @implementation Frame
 
 @synthesize delegate;
+@synthesize returnType;
+@synthesize returnValue;
 
 + (Frame *)newInitial {
 	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];

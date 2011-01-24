@@ -134,7 +134,7 @@
 	Frame *frame = [Frame newInitial]; // TODO name does not match objc conventions
 	frame.delegate = self;
     @try {
-        [suite execute:frame];
+        [suite evaluate:frame];
     }
     @catch (NSException *exception) {
         [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];
