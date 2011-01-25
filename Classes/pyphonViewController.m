@@ -94,9 +94,9 @@
         [self _appendStringToOutputView:[expr description]];
         return;
     }
-	
-	Frame *frame = [Frame newInitial];
-	frame.delegate = self;
+    
+	Frame *frame = [[Pyphon sharedInstance] newInitialFrame];
+	[Pyphon sharedInstance].delegate = self;
     @try {
         NSString *result = [[expr evaluate:frame] __repr__];
         [self _appendStringToOutputView:result];
@@ -131,8 +131,8 @@
         return;
     }
 	
-	Frame *frame = [Frame newInitial]; // TODO name does not match objc conventions
-	frame.delegate = self;
+	Frame *frame = [[Pyphon sharedInstance] newInitialFrame];
+	[Pyphon sharedInstance].delegate = self;
     @try {
         [suite evaluate:frame];
     }

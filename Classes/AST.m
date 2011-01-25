@@ -558,8 +558,7 @@ static NSString *descriptionForArray(NSArray *array) {
 		[arguments addObject:value];
 	}
 
-	// TODO should use a protocol here
-	NSObject *result = [(Function *)func callWithArray:arguments frame:frame];
+	NSObject *result = [(id<Callable>)func call:arguments frame:frame];
 	[arguments release];
 	return result;
 }

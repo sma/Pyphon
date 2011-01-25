@@ -39,12 +39,12 @@
             Parser *p = [[Parser alloc] initWithString:source];
             Suite *s = [p parse_file];
             [p release];
-            NSMutableDictionary *d = [[NSMutableDictionary alloc] init]; 
-            Frame *f = [[Frame alloc] initWithLocals:d globals:d];
-            [d release];
+            
+            Pyphon *pyphon = [[Pyphon alloc] init];
+            Frame *frame = [pyphon newInitialFrame];
             
             @try {
-                NSString *actual = [[s evaluate:f] __repr__];
+                NSString *actual = [[s evaluate:frame] __repr__];
 
                 if ([actual isEqualToString:expected]) {
                     [report appendString:@"\nOK\n"];
@@ -60,7 +60,8 @@
                 [report appendFormat:@"\n%@: %@\n", exception.name, exception.reason];
             }
             
-            [f release];
+            [frame release];
+            [pyphon release];
             
             [buffer setString:@""];
         }

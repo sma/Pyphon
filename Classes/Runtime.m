@@ -7,12 +7,23 @@
 //
 
 #import "Runtime.h"
+#import "AST.h" // resolve forward declaration
 
 
 NSObject *kReturning = @"Returning";
 
 
 @implementation Pyphon
+
+@synthesize delegate;
+
++ (Pyphon *)sharedInstance {
+    static Pyphon *instance;
+    if (!instance) {
+        instance = [[Pyphon alloc] init];
+    }
+    return instance;
+}
 
 + (NSObject *)True {
     static NSObject *True = nil;
@@ -38,27 +49,34 @@ NSObject *kReturning = @"Returning";
     return None;
 }
 
+- (Frame *)newInitialFrame {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    // TODO should be __builtins__
+	[dict setObject:[BuiltinFunction functionWithSelector:@selector(print:frame:)] 
+             forKey:@"print"];
+    
+    return [[Frame alloc] initWithLocals:dict globals:dict pyphon:self];
+}
+
 @end
 
 
 @implementation Frame
 
-@synthesize delegate;
+@synthesize locals;
+@synthesize globals;
+@synthesize pyphon;
 @synthesize returnType;
 @synthesize returnValue;
 
-+ (Frame *)newInitial {
-	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-	// TODO should be __builtins__
-	[dictionary setObject:[BuiltinFunction functionWithSelector:@selector(printWithArray:frame:)] forKey:@"print"];
-	
-	return [[self alloc] initWithLocals:dictionary globals:dictionary];
-}
-
-- (Frame *)initWithLocals:(NSMutableDictionary *)locals_ globals:(NSMutableDictionary *)globals_ {
+- (Frame *)initWithLocals:(NSMutableDictionary *)locals_ 
+                  globals:(NSMutableDictionary *)globals_
+                   pyphon:(Pyphon *)pyphon_ {
 	if ((self = [self init])) {
 		locals = [locals_ retain];
 		globals = [globals_ retain];
+        pyphon = pyphon_;
 	}
 	return self;
 }
@@ -100,22 +118,21 @@ NSObject *kReturning = @"Returning";
 	[globals setObject:value forKey:name];
 }
 
-- (NSMutableDictionary *)globals {
-    return globals;
-}
-
 @end
 
 
 @implementation Function
 
-+ (Function *)withName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite globals:(NSMutableDictionary *)globals {
++ (Function *)withName:(NSString *)name 
+                params:(NSArray *)params 
+                 suite:(Suite *)suite 
+               globals:(NSMutableDictionary *)globals {
 	Function *function = [[[self alloc] init] autorelease];
 	if (function) {
 		function->name = [name copy];
 		function->params = [params copy];
 		function->suite = [suite retain];
-		function->globals = globals; // assign
+		function->globals = [globals retain];
 	}
 	return function;
 }
@@ -124,21 +141,37 @@ NSObject *kReturning = @"Returning";
 	[name release];
 	[params release];
 	[suite release];
+    [globals release];
 	[super dealloc];
 }
 
-- (NSObject *)callWithArray:(NSArray *)arguments frame:(Frame *)frame {
-	NSUInteger count = [arguments count];
-	NSMutableDictionary *locals = [NSMutableDictionary dictionaryWithCapacity:count];
-	for (NSUInteger i = 0; i < count; i++) {
+- (NSObject *)call:(NSArray *)arguments frame:(Frame *)oldFrame {
+    NSUInteger count = [arguments count];
+    
+	NSMutableDictionary *locals = [[NSMutableDictionary alloc] initWithCapacity:count];
+	
+    for (NSUInteger i = 0; i < count; i++) {
 		[locals setObject:[arguments objectAtIndex:i] forKey:[params objectAtIndex:i]];
 	}
-	frame = [[Frame alloc] initWithLocals:locals globals:globals];
-	frame.delegate = frame.delegate;
-	// TODO cannot directly use Suite because I twisted the classes 
-	[suite performSelector:@selector(execute:) withObject:frame];
-	[frame release];
-	return nil; // TODO catch ReturnException etc.
+    
+    Frame *newFrame = [[Frame alloc] initWithLocals:locals globals:globals pyphon:oldFrame.pyphon];
+    
+    [locals release];
+    
+    NSObject *result = [(Suite *)suite evaluate:newFrame];
+    
+    if (result == kReturning) {
+        if (newFrame.returnType == kReturn) {
+            result = newFrame.returnValue;
+        } else {
+            oldFrame.returnType = newFrame.returnType;
+            oldFrame.returnValue = newFrame.returnValue;
+        }
+    }
+    
+    [newFrame release];
+
+    return result;
 }
 
 @end
@@ -154,12 +187,13 @@ NSObject *kReturning = @"Returning";
 	return bf;
 }
 
-- (NSObject *)callWithArray:(NSArray *)arguments frame:(Frame *)frame {
+- (NSObject *)call:(NSArray *)arguments frame:(Frame *)frame {
 	return [self performSelector:selector withObject:arguments withObject:frame];
 }
 
-- (NSObject *)printWithArray:(NSArray *)arguments frame:(Frame *)frame {
+- (NSObject *)print:(NSArray *)arguments frame:(Frame *)frame {
     NSMutableString *buffer = [[NSMutableString alloc] init];
+    
     BOOL first = YES;
     for (NSObject *argument in arguments) {
         if (first) {
@@ -169,12 +203,15 @@ NSObject *kReturning = @"Returning";
         }
         [buffer appendString:[argument __str__]];
     }
-	[frame.delegate print:buffer];
+	[frame.pyphon.delegate print:buffer];
+    
     [buffer release];
+    
 	return nil;
 }
 
 @end
+
 
 @implementation NSObject (Pyphon)
 
@@ -187,6 +224,7 @@ NSObject *kReturning = @"Returning";
 }
 
 @end
+
 
 @implementation NSString (Pyphon)
 
@@ -213,6 +251,7 @@ NSObject *kReturning = @"Returning";
 
 @end
 
+
 @implementation NSArray (Pyphon)
 
 - (NSString *)__repr__ {
@@ -236,6 +275,7 @@ NSObject *kReturning = @"Returning";
 
 @end
 
+
 @implementation NSMutableArray (Pyphon)
 
 - (NSString *)__repr__ {
@@ -255,6 +295,7 @@ NSObject *kReturning = @"Returning";
 }
 
 @end
+
 
 @implementation NSMutableSet (Pyphon)
 
@@ -278,6 +319,7 @@ NSObject *kReturning = @"Returning";
 }
 
 @end
+
 
 @implementation NSMutableDictionary (Pyphon)
 
