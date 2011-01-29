@@ -16,11 +16,6 @@
 }
 
 - (id)initWithString:(NSString *)source;
-- (Token *)token;
-- (void)advance;
-- (BOOL)at:(NSString *)token;
-- (void)expect:(NSString *)token;
-
 - (Expr *)parse_test;
 - (Suite *)parse_suite;
 - (Suite *)parse_file;
