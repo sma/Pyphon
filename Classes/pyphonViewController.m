@@ -98,8 +98,11 @@
 	Frame *frame = [[Pyphon sharedInstance] newInitialFrame];
 	[Pyphon sharedInstance].delegate = self;
     @try {
-        NSString *result = [[expr evaluate:frame] __repr__];
-        [self _appendStringToOutputView:result];
+        Value *result = [expr evaluate:frame];
+        if (frame.resultType) {
+            @throw [NSException exceptionWithName:[result __repr__] reason:nil userInfo:nil];
+        }
+        [self _appendStringToOutputView:[result __repr__]];
     }
     @catch (NSException *exception) {
         [self _appendStringToOutputView:[NSString stringWithFormat:@"%@: %@", [exception name], [exception reason]]];

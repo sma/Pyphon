@@ -15,14 +15,18 @@
 }
 
 + (NSArray *)tokenizeString:(NSString *)string;
++ (Token *)EOFToken;
 + (Token *)indentToken;
 + (Token *)dedentToken;
-+ (Token *)EOFToken;
-+ (Token *)tokenWithSource:(NSString *)source range:(NSRange)range;
 
+- (id)initWithSource:(NSString *)source range:(NSRange)range;
 - (BOOL)isEqualToString:(NSString *)string;
+- (BOOL)isNumber;
+- (BOOL)isString;
+- (NSNumber *)numberValue;
 - (NSString *)stringValue;
 - (NSString *)stringByUnescapingStringValue;
+- (unichar)firstCharacter;
 - (NSUInteger)lineNumber;
 
 @end

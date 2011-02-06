@@ -10,6 +10,7 @@
 
 #define RE @"(?m)^ *(?:#.*)?\n|#.*$|(^ +|\n|\\d+|\\w+|[()\\[\\]{}:.,;]|[+\\-*/%<>=]=?|!=|'(?:\\\\[n'\"\\\\]|[^'])*'|\"(?:\\\\[n'\"\\\\]|[^\"])*\")"
 
+
 @implementation Token
 
 + (NSArray *)tokenizeString:(NSString *)source {
@@ -54,7 +55,9 @@
 										 }
 									 }
 									 // add newline or non-whitespace token to result
-									 [tokens addObject:[Token tokenWithSource:source range:range]];
+                                     Token *token = [[Token alloc] initWithSource:source range:range];
+									 [tokens addObject:token];
+                                     [token release];
 								 }
 							 }
 						 }];
@@ -72,7 +75,7 @@
 + (Token *)indentToken {
 	static Token *indentToken = nil;
 	if (!indentToken) {
-		indentToken = [[Token tokenWithSource:@"!INDENT" range:NSMakeRange(0, 7)] retain];
+		indentToken = [[Token alloc] initWithSource:@"!INDENT" range:NSMakeRange(0, 7)];
 	}
 	return indentToken;
 }
@@ -80,7 +83,7 @@
 + (Token *)dedentToken {
 	static Token *dedentToken = nil;
 	if (!dedentToken) {
-		dedentToken = [[Token tokenWithSource:@"!DEDENT" range:NSMakeRange(0, 7)] retain];
+		dedentToken = [[Token alloc] initWithSource:@"!DEDENT" range:NSMakeRange(0, 7)];
 	}
 	return dedentToken;
 }
@@ -88,22 +91,33 @@
 + (Token *)EOFToken {
 	static Token *EOFToken = nil;
 	if (!EOFToken) {
-		EOFToken = [[Token tokenWithSource:@"!EOF" range:NSMakeRange(0, 4)] retain];
+		EOFToken = [[Token alloc] initWithSource:@"!EOF" range:NSMakeRange(0, 4)];
 	}
 	return EOFToken;
 }
 
-+ (Token *)tokenWithSource:(NSString *)source range:(NSRange)range {
-	Token *token = [[[Token alloc] init] autorelease];
-	if (token) {
-		token->source = source;
-		token->range = range;
-	}
-	return token;
+- (id)initWithSource:(NSString *)source_ range:(NSRange)range_ {
+    if ((self = [super init])) {
+        self->source = source_;
+        self->range = range_;
+    }
+	return self;
 }
 
 - (BOOL)isEqualToString:(NSString *)string {
 	return [[self stringValue] isEqualToString:string];
+}
+
+- (BOOL)isNumber {
+    return isdigit([self firstCharacter]);
+}
+
+- (BOOL)isString {
+    return '"' == [self firstCharacter] || '\'' == [self firstCharacter];
+}
+
+- (NSNumber *)numberValue {
+    return [NSNumber numberWithInteger:[[self stringValue] integerValue]];
 }
 
 - (NSString *)stringValue {
@@ -125,6 +139,10 @@
         [buffer appendFormat:@"%c", c];
     }
     return buffer;
+}
+
+- (unichar)firstCharacter {
+    return [source characterAtIndex:range.location];
 }
 
 - (NSUInteger)lineNumber {

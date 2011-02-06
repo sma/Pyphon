@@ -44,16 +44,22 @@
             Frame *frame = [pyphon newInitialFrame];
             
             @try {
-                NSString *actual = [[s evaluate:frame] __repr__];
-
-                if ([actual isEqualToString:expected]) {
-                    [report appendString:@"\nOK\n"];
+                Value *result = [s evaluate:frame];
+                if (frame.resultType) {
+                    [report appendFormat:@"Exceptional result(%d): %@\n", 
+                     frame.resultType, [result __repr__]];
                 } else {
-                    [report appendString:@"\nActual  : "];
-                    [report appendString:actual];
-                    [report appendString:@"\nExpected: "];
-                    [report appendString:expected];
-                    [report appendString:@"\n"];
+                    NSString *actual = [result __repr__];
+
+                    if ([actual isEqualToString:expected]) {
+                        [report appendString:@"\nOK\n"];
+                    } else {
+                        [report appendString:@"\nActual  : "];
+                        [report appendString:actual];
+                        [report appendString:@"\nExpected: "];
+                        [report appendString:expected];
+                        [report appendString:@"\n"];
+                    }
                 }
             }
             @catch (NSException *exception) {

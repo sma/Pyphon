@@ -10,7 +10,7 @@
 #import "AST.h" // resolve forward declaration
 
 
-NSObject *kReturning = @"Returning";
+#pragma mark Runtime object
 
 
 @implementation Pyphon
@@ -49,17 +49,33 @@ NSObject *kReturning = @"Returning";
     return None;
 }
 
+- (id)init {
+    if ((self = [super init])) {
+        self->builtins = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                          [BuiltinFunction functionWithSelector:@selector(print:)], @"print",
+                          [BuiltinFunction functionWithSelector:@selector(len:)], @"len",
+                          nil];
+    }
+    return self;
+}
+
 - (Frame *)newInitialFrame {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     
-    // TODO should be __builtins__
-	[dict setObject:[BuiltinFunction functionWithSelector:@selector(print:frame:)] 
-             forKey:@"print"];
+	[dict setObject:builtins forKey:@"__builtins__"];
     
-    return [[Frame alloc] initWithLocals:dict globals:dict pyphon:self];
+    Frame *initialFrame = [[Frame alloc] initWithLocals:dict globals:dict pyphon:self];
+
+    [dict release];
+    
+    return initialFrame;
 }
 
 @end
+
+
+#pragma mark -
+#pragma mark Frame object
 
 
 @implementation Frame
@@ -67,8 +83,8 @@ NSObject *kReturning = @"Returning";
 @synthesize locals;
 @synthesize globals;
 @synthesize pyphon;
-@synthesize returnType;
-@synthesize returnValue;
+@synthesize resultType;
+@synthesize arguments;
 
 - (Frame *)initWithLocals:(NSMutableDictionary *)locals_ 
                   globals:(NSMutableDictionary *)globals_
@@ -82,17 +98,14 @@ NSObject *kReturning = @"Returning";
 }
 
 - (void)dealloc {
-	[locals release];
+    [arguments release];
 	[globals release];
+	[locals release];
 	[super dealloc];
 }
 
 - (NSObject *)localValueForName:(NSString *)name {
-	NSObject *value = [locals objectForKey:name];
-	if (!value) {
-		value = [self globalValueForName:name];
-	}
-	return value;
+	return [locals objectForKey:name];
 }
 
 - (void)setLocalValue:(NSObject *)value forName:(NSString *)name {
@@ -103,14 +116,8 @@ NSObject *kReturning = @"Returning";
 	NSObject *value = [globals objectForKey:name];
 	if (!value) {
 		value = [globals objectForKey:@"__builtins__"];
-		if (value) {
-			value = [(NSDictionary *)value objectForKey:name];
-			if (!value) {
-				// TODO raise NameError
-				return nil;
-			}
-		}
-	}
+		value = [(NSDictionary *)value objectForKey:name];
+    }
 	return value;
 }
 	
@@ -118,7 +125,21 @@ NSObject *kReturning = @"Returning";
 	[globals setObject:value forKey:name];
 }
 
+- (Value *)typeError:(NSString *)message {
+    self.resultType = kException;
+    return [@"TypeError: " stringByAppendingString:message];
+}
+
+- (Value *)raise:(NSString *)exception {
+    self.resultType = kException;
+    return exception;
+}
+
 @end
+
+
+#pragma mark -
+#pragma mark Function objects
 
 
 @implementation Function
@@ -145,29 +166,36 @@ NSObject *kReturning = @"Returning";
 	[super dealloc];
 }
 
-- (NSObject *)call:(NSArray *)arguments frame:(Frame *)oldFrame {
-    NSUInteger count = [arguments count];
+- (Value *)call:(Frame *)frame {
+    NSUInteger count = [frame.arguments count];
+    
+    if (count != [params count]) {
+        return [frame typeError:@"wrong number of arguments"];
+    }
     
 	NSMutableDictionary *locals = [[NSMutableDictionary alloc] initWithCapacity:count];
 	
     for (NSUInteger i = 0; i < count; i++) {
-		[locals setObject:[arguments objectAtIndex:i] forKey:[params objectAtIndex:i]];
+		[locals setObject:[frame.arguments objectAtIndex:i] forKey:[params objectAtIndex:i]];
 	}
     
-    Frame *newFrame = [[Frame alloc] initWithLocals:locals globals:globals pyphon:oldFrame.pyphon];
+    frame.arguments = nil;
+    
+    Frame *newFrame = [[Frame alloc] initWithLocals:locals globals:globals pyphon:frame.pyphon];
     
     [locals release];
     
-    NSObject *result = [(Suite *)suite evaluate:newFrame];
-    
-    if (result == kReturning) {
-        if (newFrame.returnType == kReturn) {
-            result = newFrame.returnValue;
-        } else {
-            oldFrame.returnType = newFrame.returnType;
-            oldFrame.returnValue = newFrame.returnValue;
+    Value *result = [(Suite *)suite evaluate:newFrame];
+    if (newFrame.resultType) {
+        if (newFrame.resultType == kReturn) {
+            newFrame.resultType = kValue;
+        }
+        if (newFrame.resultType == kBreak) {
+            result = [newFrame raise:@"SyntaxError: 'break' outside loop"];
         }
     }
+    
+    frame.resultType = newFrame.resultType;
     
     [newFrame release];
 
@@ -187,15 +215,21 @@ NSObject *kReturning = @"Returning";
 	return bf;
 }
 
-- (NSObject *)call:(NSArray *)arguments frame:(Frame *)frame {
-	return [self performSelector:selector withObject:arguments withObject:frame];
+- (Value *)call:(Frame *)frame {
+	Value *result = [self performSelector:selector withObject:frame];
+    frame.arguments = nil;
+    return result;
 }
 
-- (NSObject *)print:(NSArray *)arguments frame:(Frame *)frame {
+- (Value *)print:(Frame *)frame {
+    if ([frame.arguments count] != 1) {
+        return [frame typeError:@"print(): wrong number of arguments"];
+    }
+
     NSMutableString *buffer = [[NSMutableString alloc] init];
     
     BOOL first = YES;
-    for (NSObject *argument in arguments) {
+    for (NSObject *argument in frame.arguments) {
         if (first) {
             first = NO;
         } else {
@@ -210,7 +244,28 @@ NSObject *kReturning = @"Returning";
 	return nil;
 }
 
+- (Value *)len:(Frame *)frame {
+    if ([frame.arguments count] != 1) {
+        return [frame typeError:@"len(): wrong number of arguments"];
+    }
+    
+    Value *arg = [frame.arguments objectAtIndex:0];
+    
+    if ([arg isKindOfClass:[NSString class]]) {
+        return [NSNumber numberWithInteger:[(NSString *)arg length]];
+    }
+    if ([arg respondsToSelector:@selector(count)]) {
+        return [NSNumber numberWithInteger:[(NSArray *)arg count]];
+    }
+    
+    return [frame typeError:@"object has no len()"];
+}
+
 @end
+
+
+#pragma mark -
+#pragma mark Foundation class extensions
 
 
 @implementation NSObject (Pyphon)

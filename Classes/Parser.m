@@ -11,7 +11,7 @@
 @implementation Parser
 
 
-#pragma mark Initialisation
+#pragma mark Initialization
 
 
 - (id)initWithString:(NSString *)source {
@@ -162,7 +162,7 @@
 	if ([self has_test]) {
         [exprs addObjectsFromArray:[self parse_testlist_opt]];
     }
-	return [TupleExpr withExprs:exprs];
+	return [TupleExpr exprWithExprs:exprs];
 }
 
 
@@ -189,31 +189,31 @@
 			return start;
 		}
 	} else {
-		start = [LiteralExpr withValue:[Pyphon None]];
+		start = [LiteralExpr exprWithValue:[Pyphon None]];
 		[self expect:@":"];
 	}
 	if ([self has_test]) {
 		stop = [self parse_test];
 	} else {
-		stop = [LiteralExpr withValue:[Pyphon None]];
+		stop = [LiteralExpr exprWithValue:[Pyphon None]];
 	}
 	if ([self at:@":"]) {
 		if ([self has_test]) {
 			step = [self parse_test];
 		} else {
-			step = [LiteralExpr withValue:[Pyphon None]];
+			step = [LiteralExpr exprWithValue:[Pyphon None]];
 		}
 	} else {
-		step = [LiteralExpr withValue:[Pyphon None]];
+		step = [LiteralExpr exprWithValue:[Pyphon None]];
 	}
-	return [CallExpr withExpr:[VariableExpr withName:@"slice"]
-			withArgumentExprs:[NSArray arrayWithObjects:start, stop, step, nil]];
+	return [CallExpr exprWithFuncExpr:[VariableExpr exprWithName:@"slice"]
+                             argExprs:[NSArray arrayWithObjects:start, stop, step, nil]];
 }
 
 // dictorsetmaker: test ':' test {',' test ':' test} [','] | testlist
 - (Expr *)parse_dictorsetmaker {
 	if ([self at:@"}"]) {
-		return [DictExpr withExprs:[NSArray array]];
+		return [DictExpr exprWithExprs:[NSArray array]];
 	}
 	Expr *expr = [self parse_test];
 	if ([self at:@":"]) {
@@ -221,7 +221,7 @@
 		NSMutableArray *exprs = [NSMutableArray arrayWithObject:pair];
 		while ([self at:@","]) {
 			if ([self at:@"}"]) {
-				return [DictExpr withExprs:exprs];
+				return [DictExpr exprWithExprs:exprs];
 			}
 			Expr *key = [self parse_test];
 			[self expect:@":"];
@@ -229,17 +229,17 @@
 			[exprs addObject:pair];
 		}
 		[self expect:@"}"];
-		return [DictExpr withExprs:exprs];
+		return [DictExpr exprWithExprs:exprs];
 	} else {
 		NSMutableArray *exprs = [NSMutableArray arrayWithObject:expr];
 		while ([self at:@","]) {
 			if ([self at:@"}"]) {
-				return [SetExpr withExprs:exprs];
+				return [SetExpr exprWithExprs:exprs];
 			}
 			[exprs addObject:[self parse_test]];
 		}
 		[self expect:@"}"];
-		return [SetExpr withExprs:exprs];
+		return [SetExpr exprWithExprs:exprs];
 	}
 }
 
@@ -247,13 +247,13 @@
 - (Expr *)parse_listmaker {
 	NSArray *exprs = [self parse_testlist_opt];
 	[self expect:@"]"];
-	return [ListExpr withExprs:exprs];
+	return [ListExpr exprWithExprs:exprs];
 }
 
 // private
 - (Expr *)parse_tuplemaker {
 	if ([self at:@")"]) {
-		return [TupleExpr withExprs:[NSArray array]];
+		return [TupleExpr exprWithExprs:[NSArray array]];
 	}
 	Expr *expr = [self parse_test];
 	if ([self at:@")"]) {
@@ -263,7 +263,7 @@
 	NSMutableArray *exprs = [NSMutableArray arrayWithObject:expr];
 	[exprs addObjectsFromArray:[self parse_testlist_opt]];
 	[self expect:@")"];
-	return [TupleExpr withExprs:exprs];
+	return [TupleExpr exprWithExprs:exprs];
 }
 
 // atom: '(' [testlist] ')' | '[' [testlist] ']' | '{' [dictorsetmaker] '}' | NAME | NUMBER | STRING+
@@ -277,11 +277,11 @@
 
 	if (isalpha(ch) || ch == '_') {
 		[self advance];
-		return [VariableExpr withName:tokenValue];
+		return [VariableExpr exprWithName:tokenValue];
 	}
 	if (isdigit(ch)) {
 		[self advance];
-		return [LiteralExpr withValue:[NSNumber numberWithInteger:[tokenValue integerValue]]];
+		return [LiteralExpr exprWithValue:[NSNumber numberWithInteger:[tokenValue integerValue]]];
 	}
 	if (ch == '"' || ch == '\'') {
 		NSMutableString *s = [NSMutableString string];
@@ -290,7 +290,7 @@
 			[self advance];
 			ch = [[[self token] stringValue] characterAtIndex:0];
 		}
-		return [LiteralExpr withValue:s];
+		return [LiteralExpr exprWithValue:s];
 	}
 	return [self error:@"expected (, [, {, NAME, NUMBER or STRING"];
 }
@@ -301,13 +301,13 @@
 	// trailer: '(' [testlist] ')' | '[' subscript ']' | '.' NAME
 	while (TRUE) {
 		if ([self at:@"("]) {
-			expr = [CallExpr withExpr:expr withArgumentExprs:[self parse_testlist_opt]];
+			expr = [CallExpr exprWithFuncExpr:expr argExprs:[self parse_testlist_opt]];
 			[self expect:@")"];
 		} else if ([self at:@"["]) {
-			expr = [IndexExpr withExpr:expr withSubscriptExpr:[self parse_subscript]];
+			expr = [IndexExpr exprWithExpr:expr subscriptExpr:[self parse_subscript]];
 			[self expect:@"]"];
 		} else if ([self at:@"."]) {
-			expr = [AttrExpr withExpr:expr withName:[self parse_NAME]];
+			expr = [AttrExpr exprWithExpr:expr name:[self parse_NAME]];
 		} else {
 			break;
 		}
@@ -318,10 +318,10 @@
 // factor: ('+'|'-') factor | power
 - (Expr *)parse_factor {
 	if ([self at:@"-"]) {
-		return [NegExpr withExpr:[self parse_factor]];
+		return [NegExpr exprWithExpr:[self parse_factor]];
 	}
 	if ([self at:@"+"]) {
-		return [PosExpr withExpr:[self parse_factor]];
+		return [PosExpr exprWithExpr:[self parse_factor]];
 	}
 	return [self parse_power];
 }
@@ -331,11 +331,11 @@
 	Expr *expr = [self parse_factor];
 	while (TRUE) {
 		if ([self at:@"*"]) {
-			expr = [MulExpr withLeftExpr:expr rightExpr:[self parse_factor]];
+			expr = [MulExpr exprWithLeftExpr:expr rightExpr:[self parse_factor]];
 		} else if ([self at:@"/"]) {
-			expr = [DivExpr withLeftExpr:expr rightExpr:[self parse_factor]];
+			expr = [DivExpr exprWithLeftExpr:expr rightExpr:[self parse_factor]];
 		} else if ([self at:@"%"]) {
-			expr = [ModExpr withLeftExpr:expr rightExpr:[self parse_factor]];
+			expr = [ModExpr exprWithLeftExpr:expr rightExpr:[self parse_factor]];
 		} else {
 			break;
 		}
@@ -348,9 +348,9 @@
 	Expr *expr = [self parse_term];
 	while (TRUE) {
 		if ([self at:@"+"]) {
-			expr = [AddExpr withLeftExpr:expr rightExpr:[self parse_term]];
+			expr = [AddExpr exprWithLeftExpr:expr rightExpr:[self parse_term]];
 		} else if ([self at:@"-"]) {
-			expr = [SubExpr withLeftExpr:expr rightExpr:[self parse_term]];
+			expr = [SubExpr exprWithLeftExpr:expr rightExpr:[self parse_term]];
 		} else {
 			break;
 		}
@@ -361,22 +361,22 @@
 // comparison: expr [('<'|'>'|'=='|'>='|'<='|'!='|'in'|'not' 'in'|'is' ['not']) expr]
 - (Expr *)parse_comparison {
 	Expr *expr = [self parse_expr];
-	if ([self at:@"<"]) return [LtExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@">"]) return [GtExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@"=="]) return [EqExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@"<="]) return [LeExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@">="]) return [GeExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@"!="]) return [NeExpr withLeftExpr:expr rightExpr:[self parse_expr]];
-	if ([self at:@"in"]) return [InExpr withLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@"<"]) return [LtExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@">"]) return [GtExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@"=="]) return [EqExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@"<="]) return [LeExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@">="]) return [GeExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@"!="]) return [NeExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
+	if ([self at:@"in"]) return [InExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
 	if ([self at:@"not"]) {
 		[self expect:@"in"];
-		return [NotExpr withExpr: [InExpr withLeftExpr:expr rightExpr:[self parse_expr]]];
+		return [NotExpr exprWithExpr: [InExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]]];
 	}
 	if ([self at:@"is"]) {
 		if ([self at:@"not"]) {
-			return [NotExpr withExpr:[IsExpr withLeftExpr:expr rightExpr:[self parse_expr]]];
+			return [NotExpr exprWithExpr:[IsExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]]];
 		}
-		return [IsExpr withLeftExpr:expr rightExpr:[self parse_expr]];
+		return [IsExpr exprWithLeftExpr:expr rightExpr:[self parse_expr]];
 	}
 	return expr;
 }
@@ -384,7 +384,7 @@
 // not_test: 'not' not_test | comparison
 - (Expr *)parse_not_test {
 	if ([self at:@"not"]) {
-		return [NotExpr withExpr:[self parse_not_test]];
+		return [NotExpr exprWithExpr:[self parse_not_test]];
 	}
 	return [self parse_comparison];
 }
@@ -393,7 +393,7 @@
 - (Expr *)parse_and_test	{
 	Expr *expr = [self parse_not_test];
 	while ([self at:@"and"]) {
-		expr = [AndExpr withLeftExpr:expr rightExpr:[self parse_not_test]];
+		expr = [AndExpr exprWithLeftExpr:expr rightExpr:[self parse_not_test]];
 	}
 	return expr;
 }
@@ -402,7 +402,7 @@
 - (Expr *)parse_or_test	{
 	Expr *expr = [self parse_and_test];
 	while ([self at:@"or"]) {
-		expr = [OrExpr withLeftExpr:expr rightExpr:[self parse_and_test]];
+		expr = [OrExpr exprWithLeftExpr:expr rightExpr:[self parse_and_test]];
 	}
 	return expr;
 }
@@ -414,7 +414,7 @@
 		Expr *thenExpr = expr;
 		Expr *testExpr = [self parse_or_test];
 		[self expect:@"else"];
-		return [IfExpr withTestExpr:testExpr thenExpr:thenExpr elseExpr:[self parse_test]];
+		return [IfExpr exprWithTestExpr:testExpr thenExpr:thenExpr elseExpr:[self parse_test]];
 	}
 	return expr;
 }
@@ -427,10 +427,10 @@
 - (Stmt *)parse_expr_stmt {
     if ([self has_test]) {
         Expr *expr = [self parse_testlist_as_tuple];
-		if ([self at:@"="]) return [AssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
-		if ([self at:@"+="]) return [AddAssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
-		if ([self at:@"-="]) return [SubAssignStmt withLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
-		return [ExprStmt withExpr:expr];
+		if ([self at:@"="]) return [AssignStmt stmtWithLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
+		if ([self at:@"+="]) return [AddAssignStmt stmtWithLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
+		if ([self at:@"-="]) return [SubAssignStmt stmtWithLeftExpr:expr rightExpr:[self parse_testlist_as_tuple]];
+		return [ExprStmt stmtWithExpr:expr];
 	}
 	return [self error:@"expected statement"];
 }
@@ -441,11 +441,11 @@
 	if ([self at:@"pass"]) return [PassStmt stmt];
 	if ([self at:@"break"]) return [BreakStmt stmt];
 	if ([self at:@"return"]) {
-        Expr *expr = [self has_test] ? [self parse_testlist_as_tuple] : [LiteralExpr withValue:[Pyphon None]];
-		return [ReturnStmt withExpr:expr];
+        Expr *expr = [self has_test] ? [self parse_testlist_as_tuple] : [LiteralExpr exprWithValue:[Pyphon None]];
+		return [ReturnStmt stmtWithExpr:expr];
 	}
 	if ([self at:@"raise"]) {
-		return [RaiseStmt withExpr:[self has_test] ? [self parse_test] : nil];
+		return [RaiseStmt stmtWithExpr:[self has_test] ? [self parse_test] : nil];
 	}
 	return [self parse_expr_stmt];
 }
@@ -473,7 +473,7 @@
 		[self expect:@":"];
 		return [self parse_suite];
 	}
-	return [Suite withPassStmt];
+	return [Suite suiteWithPassStmt];
 }
 
 // private: ['elif' test ':' suite | 'else' ':' suite]
@@ -481,7 +481,8 @@
 	if ([self at:@"elif"]) {
 		Expr *testExpr = [self parse_test];
 		[self expect:@":"];
-		return [Suite withStmt:[IfStmt withTestExpr:testExpr thenSuite:[self parse_suite] elseSuite:[self parse_if_stmt_cont]]];
+        Suite *thenSuite = [self parse_suite];
+		return [Suite suiteWithStmt:[IfStmt stmtWithTestExpr:testExpr thenSuite:thenSuite elseSuite:[self parse_if_stmt_cont]]];
 	}
 	return [self parse_else];
 }
@@ -491,7 +492,7 @@
 	Expr *testExpr = [self parse_test];
 	[self expect:@":"];
 	Suite *thenSuite = [self parse_suite];
-	return [IfStmt withTestExpr:testExpr thenSuite:thenSuite elseSuite:[self parse_if_stmt_cont]];
+	return [IfStmt stmtWithTestExpr:testExpr thenSuite:thenSuite elseSuite:[self parse_if_stmt_cont]];
 }
 
 // while_stmt: 'while' test ':' suite ['else' ':' suite]
@@ -500,7 +501,7 @@
 	[self expect:@":"];
 	Suite *whileSuite = [self parse_suite];
 	Suite *elseSuite = [self parse_else];
-	return [WhileStmt withTestExpr:testExpr whileSuite:whileSuite elseSuite:elseSuite];
+	return [WhileStmt stmtWithTestExpr:testExpr whileSuite:whileSuite elseSuite:elseSuite];
 }
 
 // exprlist: expr {',' expr} [',']
@@ -516,7 +517,7 @@
 			break;
 		}
 	}
-	return [TupleExpr withExprs:exprs];
+	return [TupleExpr exprWithExprs:exprs];
 }
 
 // for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
@@ -527,7 +528,7 @@
 	[self expect:@":"];
 	Suite *forSuite = [self parse_suite];
 	Suite *elseSuite = [self parse_else];
-	return [ForStmt withTargetExpr:targetExpr iterExpr:iterExpr forSuite:forSuite elseSuite:elseSuite];
+	return [ForStmt stmtWithTargetExpr:targetExpr iterExpr:iterExpr forSuite:forSuite elseSuite:elseSuite];
 }
 
 // except_clause: 'except' [test ['as' NAME]] ':' suite
@@ -541,7 +542,9 @@
 		}
 		[self expect:@":"];
 	}
-	return [ExceptClause withExceptionsExpr:exceptionsExpr name:name suite:[self parse_suite]];
+	return [ExceptClause exceptClauseWithExceptionsExpr:exceptionsExpr 
+                                                   name:name 
+                                                  suite:[self parse_suite]];
 }
 
 // try_stmt: 'try' ':' suite (except_clause {except_clause} ['else' ':' suite] | 'finally' ':' suite)
@@ -549,7 +552,7 @@
 	[self expect:@":"];
 	Suite *trySuite = [self parse_suite];
 	if ([self at:@"finally"]) {
-		return [TryFinallyStmt withTrySuite:trySuite finallySuite:[self parse_suite]];
+		return [TryFinallyStmt stmtWithTrySuite:trySuite finallySuite:[self parse_suite]];
 	}
 	[self expect:@"expect"];
 	NSMutableArray *exceptClauses = [NSMutableArray arrayWithObject:[self parse_except_clause]];
@@ -557,7 +560,7 @@
 		[exceptClauses addObject:[self parse_except_clause]];
 	}
 	Suite *elseSuite = [self parse_else];
-	return [TryExceptStmt withTrySuite:trySuite exceptClauses:exceptClauses elseSuite:elseSuite];
+	return [TryExceptStmt stmtWithTrySuite:trySuite exceptClauses:exceptClauses elseSuite:elseSuite];
 }
 
 // parameters: '(' [NAME {',' NAME} [',']] ')'
@@ -583,7 +586,7 @@
 	NSString *name = [self parse_NAME];
 	NSArray *params = [self parse_parameters];
 	[self expect:@":"];
-	return [DefStmt withName:name params:params suite:[self parse_suite]];
+	return [DefStmt stmtWithName:name params:params suite:[self parse_suite]];
 }
 
 // classdef: 'class' NAME ['(' [test] ')'] ':' suite
@@ -599,7 +602,7 @@
 		}
 	}
 	[self expect:@":"];
-	return [ClassStmt withName:name superExpr:superExpr suite:[self parse_suite]];
+	return [ClassStmt stmtWithName:name superExpr:superExpr suite:[self parse_suite]];
 }
 
 // compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | funcdef | classdef
@@ -634,9 +637,9 @@
 		while (![self at:@"!DEDENT"]) {
 			[stmts addObjectsFromArray:[self parse_stmt]];
 		}
-		return [Suite withStmts:stmts];
+		return [Suite suiteWithStmts:stmts];
 	}
-	return [Suite withStmts:[self parse_simple_stmt]];
+	return [Suite suiteWithStmts:[self parse_simple_stmt]];
 }
 
 // file_input: {NEWLINE | stmt} ENDMARKER
@@ -647,7 +650,7 @@
 			[stmts addObjectsFromArray:[self parse_stmt]];
 		}
 	}
-	return [Suite withStmts:stmts];
+	return [Suite suiteWithStmts:stmts];
 }
 
 @end

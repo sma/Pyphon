@@ -1,5 +1,5 @@
 //
-//  ast.h
+//  AST.h
 //  Pyphon
 //
 //  Created by Stefan Matthias Aust on 15.01.11.
@@ -10,14 +10,13 @@
 #import "Runtime.h"
 
 
-#pragma mark --- expression nodes ---
+#pragma mark Expression nodes
 
 
-@interface Expr : NSObject { /* abstract */
-}
+@interface Expr : NSObject /* abstract */
 
-- (NSObject *)evaluate:(Frame *)frame;
-- (NSObject *)setValue:(NSObject *)value frame:(Frame *)frame;
+- (Value *)evaluate:(Frame *)frame;
+- (Value *)setValue:(Value *)value frame:(Frame *)frame;
 
 @end
 
@@ -27,7 +26,7 @@
 	Expr *rightExpr;
 }
 
-+ (BinaryExpr *)withLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr;
++ (BinaryExpr *)exprWithLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr;
 
 @end
 
@@ -36,7 +35,7 @@
 	Expr *expr;
 }
 
-+ (UnaryExpr *)withExpr:(Expr *)Expr;
++ (UnaryExpr *)exprWithExpr:(Expr *)Expr;
 
 @end
 
@@ -47,107 +46,89 @@
 	Expr *elseExpr;
 }
 
-+ (IfExpr *)withTestExpr:(Expr *)testExpr thenExpr:(Expr *)thenExpr elseExpr:(Expr *)elseExpr;
++ (IfExpr *)exprWithTestExpr:(Expr *)testExpr thenExpr:(Expr *)thenExpr elseExpr:(Expr *)elseExpr;
 
 @end
 
 
-@interface OrExpr : BinaryExpr {
-}
+@interface OrExpr : BinaryExpr
 @end
 
 
-@interface AndExpr : BinaryExpr {
-}
+@interface AndExpr : BinaryExpr
 @end
 
 
-@interface NotExpr : UnaryExpr {
-}
+@interface NotExpr : UnaryExpr
 @end
 
 
-@interface LtExpr : BinaryExpr {
-}
+@interface LtExpr : BinaryExpr
 @end
 
 
-@interface GtExpr : BinaryExpr {
-}
+@interface GtExpr : BinaryExpr
 @end
 
 
-@interface LeExpr : BinaryExpr {
-}
+@interface LeExpr : BinaryExpr
 @end
 
 
-@interface GeExpr : BinaryExpr {
-}
+@interface GeExpr : BinaryExpr
 @end
 
 
-@interface EqExpr : BinaryExpr {
-}
+@interface EqExpr : BinaryExpr
 @end
 
 
-@interface NeExpr : BinaryExpr {
-}
+@interface NeExpr : BinaryExpr
 @end
 
 
-@interface InExpr : BinaryExpr {
-}
+@interface InExpr : BinaryExpr
 @end
 
 
-@interface IsExpr : BinaryExpr {
-}
+@interface IsExpr : BinaryExpr
 @end
 
 
-@interface AddExpr : BinaryExpr {
-}
+@interface AddExpr : BinaryExpr
 @end
 
 
-@interface SubExpr : BinaryExpr {
-}
+@interface SubExpr : BinaryExpr
 @end
 
 
-@interface MulExpr : BinaryExpr {
-}
+@interface MulExpr : BinaryExpr
 @end
 
 
-@interface DivExpr : BinaryExpr {
-}
+@interface DivExpr : BinaryExpr
 @end
 
 
-@interface ModExpr : BinaryExpr {
-}
+@interface ModExpr : BinaryExpr
 @end
 
 
-@interface NegExpr : UnaryExpr {
-}
+@interface NegExpr : UnaryExpr
 @end
 
 
-@interface PosExpr : UnaryExpr {
-}
+@interface PosExpr : UnaryExpr
 @end
 
 
 @interface CallExpr : Expr {
-	Expr *expr;
-	NSArray *argumentExprs;
+	Expr *funcExpr;
+	NSArray *argExprs;
 }
 
-+ (CallExpr *)withExpr:(Expr *)expr withArgumentExprs:(NSArray *)argumentExprs;
++ (CallExpr *)exprWithFuncExpr:(Expr *)funcExpr argExprs:(NSArray *)argExprs;
 
 @end
 
@@ -157,7 +138,7 @@
 	Expr *subscriptExpr;
 }
 
-+ (IndexExpr *)withExpr:(Expr *)expr withSubscriptExpr:(Expr *)subscriptExpr;
++ (IndexExpr *)exprWithExpr:(Expr *)expr subscriptExpr:(Expr *)subscriptExpr;
 
 @end
 
@@ -167,16 +148,16 @@
 	NSString *name;
 }
 
-+ (AttrExpr *)withExpr:(Expr *)expr withName:(NSString *)name;
++ (AttrExpr *)exprWithExpr:(Expr *)expr name:(NSString *)name;
 
 @end
 
 
 @interface LiteralExpr : Expr {
-	NSObject *value;
+	Value *value;
 }
 
-+ (Expr *)withValue:(NSObject *)value;
++ (LiteralExpr *)exprWithValue:(Value *)value;
 
 @end
 
@@ -185,7 +166,7 @@
 	NSString *name;
 }
 
-+ (Expr *)withName:(NSString *)name;
++ (VariableExpr *)exprWithName:(NSString *)name;
 
 @end
 
@@ -194,46 +175,41 @@
 	NSArray *exprs;
 }
 
-+ (Expr *)withExprs:(NSArray *)exprs;
++ (Expr *)exprWithExprs:(NSArray *)exprs;
 
 @end
 
 
-@interface ListExpr : TupleExpr {
-}
+@interface ListExpr : TupleExpr
 @end
 
 
-@interface SetExpr : TupleExpr {
-}
+@interface SetExpr : TupleExpr
 @end
 
 
-@interface DictExpr : TupleExpr {
-}
+@interface DictExpr : TupleExpr
 @end
 
 
-#pragma mark --- statement nodes ---
+#pragma mark -
+#pragma mark Statement nodes
 
 
-@interface Stmt : NSObject { /* abstract */
-}
+@interface Stmt : NSObject /* abstract */
 
-- (NSObject *)evaluate:(Frame *)frame;
+- (Value *)evaluate:(Frame *)frame;
 
 @end
 
 
-@interface Suite : NSObject {
+@interface Suite : Stmt {
 	NSArray *stmts;
 }
 
-+ (Suite *)withPassStmt;
-+ (Suite *)withStmt:(Stmt *)stmt;
-+ (Suite *)withStmts:(NSArray *)stmts;
-
-- (NSObject *)evaluate:(Frame *)frame;
++ (Suite *)suiteWithPassStmt;
++ (Suite *)suiteWithStmt:(Stmt *)stmt;
++ (Suite *)suiteWithStmts:(NSArray *)stmts;
 
 @end
 
@@ -244,7 +220,7 @@
 	Suite *elseSuite;
 }
 
-+ (IfStmt *)withTestExpr:(Expr *)testExpr thenSuite:(Suite *)thenSuite elseSuite:(Suite *)elseSuite;
++ (IfStmt *)stmtWithTestExpr:(Expr *)testExpr thenSuite:(Suite *)thenSuite elseSuite:(Suite *)elseSuite;
 
 @end
 
@@ -255,7 +231,7 @@
 	Suite *elseSuite;
 }
 
-+ (WhileStmt *)withTestExpr:(Expr *)testExpr whileSuite:(Suite *)whileSuite elseSuite:(Suite *)elseSuite;
++ (WhileStmt *)stmtWithTestExpr:(Expr *)testExpr whileSuite:(Suite *)whileSuite elseSuite:(Suite *)elseSuite;
 
 @end
 
@@ -267,7 +243,7 @@
 	Suite *elseSuite;
 }
 
-+ (ForStmt *)withTargetExpr:(Expr *)targetExpr iterExpr:(Expr *)iterExpr forSuite:(Suite *)forSuite elseSuite:(Suite *)elseSuite;
++ (ForStmt *)stmtWithTargetExpr:(Expr *)targetExpr iterExpr:(Expr *)iterExpr forSuite:(Suite *)forSuite elseSuite:(Suite *)elseSuite;
 
 @end
 
@@ -277,7 +253,7 @@
 	Suite *finallySuite;
 }
 
-+ (TryFinallyStmt *)withTrySuite:(Suite *)trySuite finallySuite:(Suite *)finallySuite;
++ (TryFinallyStmt *)stmtWithTrySuite:(Suite *)trySuite finallySuite:(Suite *)finallySuite;
 
 @end
 
@@ -288,7 +264,7 @@
 	Suite *elseSuite;
 }
 
-+ (TryExceptStmt *)withTrySuite:(Suite *)trySuite exceptClauses:(NSArray *)exceptClauses elseSuite:(Suite *)elseSuite;
++ (TryExceptStmt *)stmtWithTrySuite:(Suite *)trySuite exceptClauses:(NSArray *)exceptClauses elseSuite:(Suite *)elseSuite;
 
 @end
 
@@ -299,10 +275,10 @@
 	Suite *suite;
 }
 
-+ (ExceptClause *)withExceptionsExpr:(Expr *)exceptionsExpr name:(NSString *)name suite:(Suite *)suite;
++ (ExceptClause *)exceptClauseWithExceptionsExpr:(Expr *)exceptionsExpr name:(NSString *)name suite:(Suite *)suite;
 
-- (BOOL)matches:(Frame *)frame;
-- (NSObject *)evaluate:(Frame *)frame;
+- (Value *)matches:(Value *)value frame:(Frame *)frame;
+- (Value *)evaluate:(Value *)value frame:(Frame *)frame;
 
 @end
 
@@ -313,7 +289,7 @@
 	Suite *suite;
 }
 
-+ (DefStmt *)withName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite;
++ (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite;
 
 @end
 
@@ -324,21 +300,19 @@
 	Suite *suite;
 }
 
-+ (ClassStmt *)withName:(NSString *)name superExpr:(Expr *)superExpr suite:(Suite *)suite;
++ (ClassStmt *)stmtWithName:(NSString *)name superExpr:(Expr *)superExpr suite:(Suite *)suite;
 
 @end
 
 
-@interface PassStmt : Stmt {
-}
+@interface PassStmt : Stmt
 
 + (Stmt *)stmt;
 
 @end
 
 
-@interface BreakStmt : Stmt {
-}
+@interface BreakStmt : Stmt
 
 + (Stmt *)stmt;
 
@@ -349,7 +323,7 @@
 	Expr *expr;
 }
 
-+ (Stmt *)withExpr:(Expr *)expr;
++ (Stmt *)stmtWithExpr:(Expr *)expr;
 
 @end
 
@@ -358,7 +332,7 @@
 	Expr *expr;
 }
 
-+ (Stmt *)withExpr:(Expr *)expr;
++ (Stmt *)stmtWithExpr:(Expr *)expr;
 
 @end
 
@@ -368,18 +342,16 @@
 	Expr *rightExpr;
 }
 
-+ (Stmt *)withLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr;
++ (Stmt *)stmtWithLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr;
 
 @end
 
 
-@interface AddAssignStmt : AssignStmt {
-}
+@interface AddAssignStmt : AssignStmt
 @end
 
 
-@interface SubAssignStmt : AssignStmt {
-}
+@interface SubAssignStmt : AssignStmt
 @end
 
 
@@ -387,8 +359,6 @@
 	Expr *expr;
 }
 
-+ (Stmt *)withExpr:(Expr *)expr;
-
-- (NSObject *)evaluate:(Frame *)frame;
++ (Stmt *)stmtWithExpr:(Expr *)expr;
 
 @end

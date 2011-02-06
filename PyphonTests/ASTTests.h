@@ -12,7 +12,6 @@
 
 @interface ASTTests : SenTestCase {
 	Frame *frame;
-    NSNumber *one, *two;
 }
 
 @end

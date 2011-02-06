@@ -8,22 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
+@class Expr;  // forward declaration
 @class Suite; // forward declaration
 @class Frame; // forward declaration
 
 
-/**
- * Unique constant that denotes an exceptional return.
- * @see ReturnType
- * @see Frame#returnType
- */
-extern NSObject *kReturning;
+typedef NSObject Value;
 
 
 /**
  * What caused exceptional return.
  */
-typedef enum { kReturn, kBreak, kException } ReturnType;
+typedef enum { kValue, kReturn, kBreak, kException } ResultType;
 
 
 /**
@@ -41,6 +37,7 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
  * Right now, it only provides some constants.
  */
 @interface Pyphon : NSObject {
+    NSMutableDictionary *builtins;
     id<PyphonDelegate> delegate;
 }
 
@@ -64,15 +61,15 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
 	NSMutableDictionary *locals;
 	NSMutableDictionary *globals;
     Pyphon *pyphon;
-    ReturnType returnType;
-    NSObject *returnValue;
+    ResultType resultType;
+    NSArray *arguments;
 }
 
 @property(nonatomic, readonly) NSMutableDictionary *locals;
 @property(nonatomic, readonly) NSMutableDictionary *globals;
 @property(nonatomic, readonly) Pyphon *pyphon;
-@property(nonatomic, assign) ReturnType returnType;
-@property(nonatomic, retain) NSObject *returnValue;
+@property(nonatomic, assign) ResultType resultType;
+@property(nonatomic, retain) NSArray *arguments;
 
 - (Frame *)initWithLocals:(NSMutableDictionary *)locals 
                   globals:(NSMutableDictionary *)globals
@@ -83,6 +80,9 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
 - (NSObject *)globalValueForName:(NSString *)name;
 - (void)setGlobalValue:(NSObject *)value forName:(NSString *)name;
 
+- (Value *)typeError:(NSString *)message;
+- (Value *)raise:(NSString *)exception;
+
 @end
 
 
@@ -91,7 +91,7 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
  */
 @protocol Callable
 
-- (NSObject *)call:(NSArray *)arguments frame:(Frame *)frame;
+- (Value *)call:(Frame *)frame;
 
 @end
  
@@ -111,7 +111,7 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
                  suite:(Suite *)suite 
                globals:(NSMutableDictionary *)globals;
 
-- (NSObject *)call:(NSArray *)arguments frame:(Frame *)frame;
+- (Value *)call:(Frame *)frame;
 
 @end
 
@@ -122,9 +122,9 @@ typedef enum { kReturn, kBreak, kException } ReturnType;
 
 + (BuiltinFunction *)functionWithSelector:(SEL)selector;
 
-- (NSObject *)call:(NSArray *)arguments frame:(Frame *)frame;
+- (Value *)call:(Frame *)frame;
 
-- (NSObject *)print:(NSArray *)arguments frame:(Frame *)frame;
+- (Value *)print:(Frame *)frame;
 
 @end
 
