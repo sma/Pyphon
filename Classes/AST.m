@@ -509,7 +509,7 @@ static NSString *descriptionForArray(NSArray *array) {
         while (count--) {
             [buffer appendString:string];
         }
-        return [buffer copy];
+        return [[buffer copy] autorelease];
     }
     
     return [frame typeError:@"unsupported operands for *"];
@@ -593,7 +593,7 @@ static NSString *descriptionForArray(NSArray *array) {
                 [buffer appendFormat:@"%c", c];
             }
         }
-        return [buffer copy];
+        return [[buffer copy] autorelease];
     }
     
     return [frame typeError:@"unsupported operands for %"];
