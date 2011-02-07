@@ -1252,7 +1252,7 @@ static NSString *descriptionForArray(NSArray *array) {
             if (frame.resultType == kBreak) {
                 frame.resultType = kValue;
             }
-            return nil;
+            return result;
         }
 	}
 	
