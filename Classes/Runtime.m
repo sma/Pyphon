@@ -62,6 +62,11 @@
     return self;
 }
 
+- (void)dealloc {
+    [builtins release];
+    [super dealloc];
+}
+
 - (Frame *)newInitialFrame {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     
