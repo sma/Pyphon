@@ -55,3 +55,11 @@
 >>> def f(n): return n+1
 >>> f(2)
 3
+
+# constants
+>>> True
+1
+>>> False
+0
+>>> None
+None

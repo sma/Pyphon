@@ -44,7 +44,7 @@
 + (NSObject *)None {
     static NSObject *None = nil;
     if (!None) {
-        None = [[NSNumber alloc] initWithInt:0]; // TODO need a real None object here
+        None = [NSNull null];
     }
     return None;
 }
@@ -52,6 +52,9 @@
 - (id)init {
     if ((self = [super init])) {
         self->builtins = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                          [Pyphon None], @"None",
+                          [Pyphon True], @"True", 
+                          [Pyphon False], @"False",
                           [BuiltinFunction functionWithSelector:@selector(print:)], @"print",
                           [BuiltinFunction functionWithSelector:@selector(len:)], @"len",
                           nil];
@@ -394,6 +397,15 @@
     }
     [buffer appendString:@"}"];
     return buffer;
+}
+
+@end
+
+
+@implementation NSNull (Pyphon)
+
+- (NSString *)__repr__ {
+    return @"None";
 }
 
 @end
