@@ -318,7 +318,7 @@
 @implementation NSArray (Pyphon)
 
 - (NSString *)__repr__ {
-    NSMutableString *buffer = [[NSMutableString alloc] init];
+    NSMutableString *buffer = [NSMutableString string];
     [buffer appendString:@"("];
     BOOL first = YES;
     for (NSObject *value in self) {
@@ -342,7 +342,7 @@
 @implementation NSMutableArray (Pyphon)
 
 - (NSString *)__repr__ {
-    NSMutableString *buffer = [[NSMutableString alloc] init];
+    NSMutableString *buffer = [NSMutableString string];
     [buffer appendString:@"["];
     BOOL first = YES;
     for (NSObject *value in self) {
@@ -366,7 +366,7 @@
     if (![self count]) {
         return @"set()";
     }
-    NSMutableString *buffer = [[NSMutableString alloc] init];
+    NSMutableString *buffer = [NSMutableString string];
     [buffer appendString:@"{"];
     BOOL first = YES;
     for (NSObject *value in self) {
@@ -387,7 +387,7 @@
 @implementation NSMutableDictionary (Pyphon)
 
 - (NSString *)__repr__ {
-    NSMutableString *buffer = [[NSMutableString alloc] init];
+    NSMutableString *buffer = [NSMutableString string];
     [buffer appendString:@"{"];
     BOOL first = YES;
     for (NSObject *key in self) {
