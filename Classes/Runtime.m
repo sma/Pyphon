@@ -258,6 +258,30 @@
 @end
 
 
+@implementation BuiltinMethod
+
++ (BuiltinMethod *)methodWithSelector:(SEL)selector receiver:(Value *)receiver {
+    BuiltinMethod *method = [[self alloc] init];
+    if (method) {
+        method->selector = selector;
+        method->receiver = receiver;
+    }
+    return method;
+}
+
+- (Value *)append:(Frame *)frame {
+    if ([frame.arguments count] != 1) {
+        return [frame typeError:@"append(): wrong number of arguments"];
+    }
+    
+    [(NSMutableArray *)receiver addObject:[frame.arguments objectAtIndex:0]];
+    
+    return nil;
+}
+
+@end
+
+
 #pragma mark -
 #pragma mark Foundation class extensions
 

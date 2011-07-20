@@ -794,6 +794,12 @@ static NSString *descriptionForArray(NSArray *array) {
         return result;
     }
     
+    if ([result isKindOfClass:[NSMutableArray class]]) {
+        if ([name isEqualToString:@"append"]) {
+            return [BuiltinMethod methodWithSelector:@selector(append:) receiver:result];
+        }
+    }
+    
     if ([result respondsToSelector:@selector(valueForKey:)]) {
         @try {
             result = [result valueForKey:name];

@@ -131,6 +131,15 @@ typedef enum { kValue, kReturn, kBreak, kException } ResultType;
 @end
 
 
+@interface BuiltinMethod : BuiltinFunction {
+    Value *receiver;
+}
+
++ (BuiltinMethod *)methodWithSelector:(SEL)selector receiver:(Value *)receiver;
+
+@end
+
+
 /**
  * Provides printing Pyphon objects, the "Python" way.
  */

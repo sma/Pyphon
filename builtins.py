@@ -44,13 +44,15 @@ __builtins__['cmp'] = cmp
 
 # compile
 
-#def enumerate(sequence, start=0):
-#    result = []
-#    start = 0
-#    for element in sequence:
-#        result.append((start, element))
-#        start += 1
-#    return result
+def enumerate(sequence, start=0):
+    result = []
+    start = 0
+    for element in sequence:
+        result.append((start, element))
+        start += 1
+    return result
+
+__builtins__['enumerate'] = enumerate
 
 def filter(function, iterable):
     result = []
