@@ -29,7 +29,7 @@
     [suite evaluate:[pyphon newInitialFrame]];
 
     // run the test case - just in case
-    // outputView.text = [Tester run];
+    [Tester run];
     
     // initialize the UI
     

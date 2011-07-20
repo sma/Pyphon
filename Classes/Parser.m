@@ -559,19 +559,31 @@
 	return [TryExceptStmt stmtWithTrySuite:trySuite exceptClauses:exceptClauses elseSuite:elseSuite];
 }
 
+// parameter: NAME ['=' test]
+- (NSString *)parse_parameter:(NSMutableArray **)defexprs {
+    NSString *name = [self parse_NAME];
+    if ([self at:@"="]) {
+        if (!*defexprs) {
+            *defexprs = [NSMutableArray array];
+        }
+        [*defexprs addObject:[self parse_expr]];
+    }
+    return name;
+}
+
 // parameters: '(' [NAME {',' NAME} [',']] ')'
-- (NSArray *)parse_parameters {
+- (NSArray *)parse_parameters:(NSMutableArray **)defexprs {
 	NSMutableArray *params = [NSMutableArray array];
 	[self expect:@"("];
 	if ([self at:@")"]) {
 		return params;
 	}
-	[params addObject:[self parse_NAME]];
+	[params addObject:[self parse_parameter:defexprs]];
 	while ([self at:@","]) {
 		if ([self at:@")"]) {
 			return params;
 		}
-		[params addObject:[self parse_NAME]];
+		[params addObject:[self parse_parameter:defexprs]];
 	}
 	[self expect:@")"];
 	return params;
@@ -580,9 +592,10 @@
 // funcdef: 'def' NAME parameters ':' suite
 - (Stmt *)parse_funcdef {
 	NSString *name = [self parse_NAME];
-	NSArray *params = [self parse_parameters];
+    NSArray *defexprs = nil;
+	NSArray *params = [self parse_parameters:&defexprs];
 	[self expect:@":"];
-	return [DefStmt stmtWithName:name params:params suite:[self parse_suite]];
+	return [DefStmt stmtWithName:name params:params defaults:defexprs suite:[self parse_suite]];
 }
 
 // classdef: 'class' NAME ['(' [test] ')'] ':' suite

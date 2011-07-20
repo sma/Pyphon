@@ -63,3 +63,11 @@
 0
 >>> None
 None
+
+# function with default parameters
+>>> def f(x=2): return x
+>>> f()
+2
+>>> def f(x=2): return x
+>>> f(3)
+3

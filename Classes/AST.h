@@ -286,10 +286,11 @@
 @interface DefStmt : Stmt {
 	NSString *name;
 	NSArray *params;
+    NSArray *defexprs;
 	Suite *suite;
 }
 
-+ (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite;
++ (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params defaults:(NSArray *)defexprs suite:(Suite *)suite;
 
 @end
 

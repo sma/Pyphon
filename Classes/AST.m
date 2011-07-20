@@ -1326,11 +1326,12 @@ static NSString *descriptionForArray(NSArray *array) {
 
 @implementation DefStmt
 
-+ (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite {
++ (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params defaults:(NSArray *)defexprs suite:(Suite *)suite {
 	DefStmt *stmt = [[self alloc] init];
 	if (stmt) {
 		stmt->name = [name copy];
 		stmt->params = [params copy];
+        stmt->defexprs = [defexprs copy];
 		stmt->suite = suite;
 	}
 	return stmt;
@@ -1338,8 +1339,17 @@ static NSString *descriptionForArray(NSArray *array) {
 
 
 - (Value *)evaluate:(Frame *)frame {
+    NSMutableArray *defaults = nil;
+    if (defexprs) {
+        defaults = [NSMutableArray arrayWithCapacity:[defexprs count]];
+        for (Expr *expr in defexprs) {
+            [defaults addObject:[expr evaluate:frame]];
+        }
+    }
+    
     Function *function = [Function withName:name 
                                      params:params 
+                                   defaults:defaults
                                       suite:suite 
                                     globals:[frame globals]];
     [frame setLocalValue:function forName:name];

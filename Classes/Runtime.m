@@ -143,12 +143,14 @@
 
 + (Function *)withName:(NSString *)name 
                 params:(NSArray *)params 
+              defaults:(NSArray *)defaults
                  suite:(Suite *)suite 
                globals:(NSMutableDictionary *)globals {
 	Function *function = [[self alloc] init];
 	if (function) {
 		function->name = [name copy];
 		function->params = [params copy];
+        function->defaults = [defaults copy];
 		function->suite = suite;
 		function->globals = globals;
 	}
@@ -157,17 +159,22 @@
 
 
 - (Value *)call:(Frame *)frame {
-    NSUInteger count = [frame.arguments count];
+    NSUInteger acount = [frame.arguments count];
+    NSUInteger pcount = [params count];
+    NSUInteger dcount = [defaults count];
     
-    if (count != [params count]) {
+    if (acount > pcount || acount < pcount - dcount) {
         return [frame typeError:@"wrong number of arguments"];
     }
     
-	NSMutableDictionary *locals = [[NSMutableDictionary alloc] initWithCapacity:count];
+	NSMutableDictionary *locals = [[NSMutableDictionary alloc] initWithCapacity:pcount];
 	
-    for (NSUInteger i = 0; i < count; i++) {
+    for (NSUInteger i = 0; i < acount; i++) {
 		[locals setObject:[frame.arguments objectAtIndex:i] forKey:[params objectAtIndex:i]];
 	}
+    for (NSUInteger i = acount; i < pcount; i++) {
+        [locals setObject:[defaults objectAtIndex:i + dcount - pcount] forKey:[params objectAtIndex:i]];
+    }
     
     frame.arguments = nil;
     

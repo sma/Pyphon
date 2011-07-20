@@ -102,12 +102,14 @@ typedef enum { kValue, kReturn, kBreak, kException } ResultType;
 @interface Function : NSObject <Callable> {
 	NSString *name;
 	NSArray *params;
+    NSArray *defaults;
 	Suite *suite;
 	NSMutableDictionary *globals;
 }
 
 + (Function *)withName:(NSString *)name 
                 params:(NSArray *)params 
+              defaults:(NSArray *)defaults
                  suite:(Suite *)suite 
                globals:(NSMutableDictionary *)globals;
 

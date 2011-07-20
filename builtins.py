@@ -25,8 +25,10 @@ __builtins__['any'] = any
 # basestring() not supported
 # bin(x)
 
-#def bool(x=False):
-#    return True if x else False
+def bool(x=False):
+    return True if x else False
+
+__builtins__['bool'] = bool
 
 # bytearray
 # callable
