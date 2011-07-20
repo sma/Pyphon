@@ -51,11 +51,11 @@ static inline NSInteger asInteger(NSObject *object) {
 static BOOL nonZero(Value *value) {
     return
         value == [Pyphon True] ||
-        isInteger(value) && [(NSNumber *)value intValue] ||
-        isString(value) && [(NSString *)value length] ||
-        isSequence(value) && [(NSArray *)value count] ||
-        isDict(value) && [(NSMutableDictionary *)value count] ||
-        isSet(value) && [(NSMutableSet *)value count];
+        (isInteger(value) && [(NSNumber *)value intValue]) ||
+        (isString(value) && [(NSString *)value length]) ||
+        (isSequence(value) && [(NSArray *)value count]) ||
+        (isDict(value) && [(NSMutableDictionary *)value count]) ||
+        (isSet(value) && [(NSMutableSet *)value count]);
 }
 
 

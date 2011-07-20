@@ -134,7 +134,7 @@
 - (BOOL)has_test {
     NSString *token = [[self token] stringValue];
 	unichar ch = [token characterAtIndex:0];
-	return isalnum(ch) && ![Parser isKeyword:token] || strchr("+-([{\"'_", ch);
+	return (isalnum(ch) && ![Parser isKeyword:token]) || strchr("+-([{\"'_", ch);
 }
 
 // testlist: test {',' test} [',']
@@ -173,7 +173,7 @@
 - (NSString *)parse_NAME {
 	NSString *name = [[self token] stringValue];
 	unichar ch = [name characterAtIndex:0];
-	if (isalpha(ch) && ![Parser isKeyword:name] || ch == '_') {
+	if ((isalpha(ch) && ![Parser isKeyword:name]) || ch == '_') {
 		[self advance];
 		return name;
 	}
