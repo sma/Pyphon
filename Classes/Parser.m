@@ -16,16 +16,12 @@
 
 - (id)initWithString:(NSString *)source {
 	if ((self = [self init])) {
-		tokens = [[Token tokenizeString:source] retain];
+		tokens = [Token tokenizeString:source];
 		index = 0;
 	}
 	return self;
 }
 
-- (void)dealloc {
-    [tokens release];
-    [super dealloc];
-}
 
 /**
  * Returns YES if the given string a Python keyword.

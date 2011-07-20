@@ -62,10 +62,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [builtins release];
-    [super dealloc];
-}
 
 - (Frame *)newInitialFrame {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
@@ -74,7 +70,6 @@
     
     Frame *initialFrame = [[Frame alloc] initWithLocals:dict globals:dict pyphon:self];
 
-    [dict release];
     
     return initialFrame;
 }
@@ -98,19 +93,13 @@
                   globals:(NSMutableDictionary *)globals_
                    pyphon:(Pyphon *)pyphon_ {
 	if ((self = [self init])) {
-		locals = [locals_ retain];
-		globals = [globals_ retain];
+		locals = locals_;
+		globals = globals_;
         pyphon = pyphon_;
 	}
 	return self;
 }
 
-- (void)dealloc {
-    [arguments release];
-	[globals release];
-	[locals release];
-	[super dealloc];
-}
 
 - (NSObject *)localValueForName:(NSString *)name {
 	return [locals objectForKey:name];
@@ -156,23 +145,16 @@
                 params:(NSArray *)params 
                  suite:(Suite *)suite 
                globals:(NSMutableDictionary *)globals {
-	Function *function = [[[self alloc] init] autorelease];
+	Function *function = [[self alloc] init];
 	if (function) {
 		function->name = [name copy];
 		function->params = [params copy];
-		function->suite = [suite retain];
-		function->globals = [globals retain];
+		function->suite = suite;
+		function->globals = globals;
 	}
 	return function;
 }
 
-- (void)dealloc {
-	[name release];
-	[params release];
-	[suite release];
-    [globals release];
-	[super dealloc];
-}
 
 - (Value *)call:(Frame *)frame {
     NSUInteger count = [frame.arguments count];
@@ -191,7 +173,6 @@
     
     Frame *newFrame = [[Frame alloc] initWithLocals:locals globals:globals pyphon:frame.pyphon];
     
-    [locals release];
     
     Value *result = [(Suite *)suite evaluate:newFrame];
     if (newFrame.resultType) {
@@ -205,7 +186,6 @@
     
     frame.resultType = newFrame.resultType;
     
-    [newFrame release];
 
     return result;
 }
@@ -216,7 +196,7 @@
 @implementation BuiltinFunction
 
 + (BuiltinFunction *)functionWithSelector:(SEL)selector {
-	BuiltinFunction *bf = [[[self alloc] init] autorelease];
+	BuiltinFunction *bf = [[self alloc] init];
 	if (bf) {
 		bf->selector = selector;
 	}
@@ -247,7 +227,6 @@
     }
 	[frame.pyphon.delegate print:buffer];
     
-    [buffer release];
     
 	return nil;
 }

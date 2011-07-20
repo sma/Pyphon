@@ -38,7 +38,6 @@
             
             Parser *p = [[Parser alloc] initWithString:source];
             Suite *s = [p parse_file];
-            [p release];
             
             Pyphon *pyphon = [[Pyphon alloc] init];
             Frame *frame = [pyphon newInitialFrame];
@@ -66,8 +65,6 @@
                 [report appendFormat:@"\n%@: %@\n", exception.name, exception.reason];
             }
             
-            [frame release];
-            [pyphon release];
             
             [buffer setString:@""];
         }
@@ -83,7 +80,6 @@
     Tester *tester = [[Tester alloc] init];
     NSString *path = [[NSBundle mainBundle] pathForResource:@"parsertests" ofType:@"py"];
     NSString *report = [tester runContentsOfFile:path];
-    [tester release];
     NSLog(@"%@", report);
     return report;
 }

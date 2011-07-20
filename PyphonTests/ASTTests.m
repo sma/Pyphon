@@ -41,7 +41,6 @@ static VariableExpr *Var(NSString *name) {
 }
 
 - (void)tearDown {
-    [frame release];
 }
 
 
@@ -428,7 +427,6 @@ static VariableExpr *Var(NSString *name) {
 - (void)_runString:(NSString *)string {
     Parser *parser = [[Parser alloc] initWithString:string];
     Suite *suite = [parser parse_file];
-    [parser release];
     [suite evaluate:frame];
     STAssertFalse(frame.resultType, @"exceptional result");
 }

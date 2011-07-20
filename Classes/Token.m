@@ -57,7 +57,6 @@
 									 // add newline or non-whitespace token to result
                                      Token *token = [[Token alloc] initWithSource:source range:range];
 									 [tokens addObject:token];
-                                     [token release];
 								 }
 							 }
 						 }];
@@ -69,7 +68,7 @@
 	}
 	
 	// return the tokens
-	return [[tokens copy] autorelease];
+	return [tokens copy];
 }
 
 + (Token *)indentToken {

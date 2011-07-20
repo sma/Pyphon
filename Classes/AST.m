@@ -108,19 +108,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation BinaryExpr
 
 + (BinaryExpr *)exprWithLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr {
-	BinaryExpr *expr = [[[self alloc] init] autorelease];
+	BinaryExpr *expr = [[self alloc] init];
 	if (expr) {
-		expr->leftExpr = [leftExpr retain];
-		expr->rightExpr = [rightExpr retain];
+		expr->leftExpr = leftExpr;
+		expr->rightExpr = rightExpr;
 	}
 	return expr;
 }
 
-- (void)dealloc {
-	[leftExpr release];
-	[rightExpr release];
-	[super dealloc];
-}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(%@, %@)", op(self), leftExpr, rightExpr];
@@ -132,17 +127,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation UnaryExpr
 
 + (UnaryExpr *)exprWithExpr:(Expr *)expr {
-	UnaryExpr *unaryExpr = [[[self alloc] init] autorelease];
+	UnaryExpr *unaryExpr = [[self alloc] init];
 	if (unaryExpr) {
-		unaryExpr->expr = [expr retain];
+		unaryExpr->expr = expr;
 	}
 	return unaryExpr;
 }
 
-- (void)dealloc {
-	[expr release];
-	[super dealloc];
-}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(%@)", op(self), expr];
@@ -154,21 +145,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation IfExpr
 
 + (IfExpr *)exprWithTestExpr:(Expr *)testExpr thenExpr:(Expr *)thenExpr elseExpr:(Expr *)elseExpr {
-	IfExpr *expr = [[[self alloc] init] autorelease];
+	IfExpr *expr = [[self alloc] init];
 	if (expr) {
-		expr->testExpr = [testExpr retain];
-		expr->thenExpr = [thenExpr retain];
-		expr->elseExpr = [elseExpr retain];
+		expr->testExpr = testExpr;
+		expr->thenExpr = thenExpr;
+		expr->elseExpr = elseExpr;
 	}
 	return expr;
 }
 
-- (void)dealloc {
-	[testExpr release];
-	[thenExpr release];
-	[elseExpr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *test = [testExpr evaluate:frame];
@@ -509,7 +494,7 @@ static NSString *descriptionForArray(NSArray *array) {
         while (count--) {
             [buffer appendString:string];
         }
-        return [[buffer copy] autorelease];
+        return [buffer copy];
     }
     
     return [frame typeError:@"unsupported operands for *"];
@@ -593,7 +578,7 @@ static NSString *descriptionForArray(NSArray *array) {
                 [buffer appendFormat:@"%c", c];
             }
         }
-        return [[buffer copy] autorelease];
+        return [buffer copy];
     }
     
     return [frame typeError:@"unsupported operands for %"];
@@ -641,19 +626,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation CallExpr
 
 + (CallExpr *)exprWithFuncExpr:(Expr *)funcExpr argExprs:(NSArray *)argExprs {
-	CallExpr *callExpr = [[[self alloc] init] autorelease];
+	CallExpr *callExpr = [[self alloc] init];
 	if (callExpr) {
-		callExpr->funcExpr = [funcExpr retain];
-		callExpr->argExprs = [argExprs retain];
+		callExpr->funcExpr = funcExpr;
+		callExpr->argExprs = argExprs;
 	}
 	return callExpr;
 }
 
-- (void)dealloc {
-	[funcExpr release];
-	[argExprs release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *func = [funcExpr evaluate:frame];
@@ -672,7 +652,6 @@ static NSString *descriptionForArray(NSArray *array) {
 	for (NSUInteger i = 0; i < count; i++) {
         Value *result = [(Expr *)[argExprs objectAtIndex:i] evaluate:frame];
         if (frame.resultType) {
-            [arguments release];
             return result;
         }
 
@@ -680,7 +659,6 @@ static NSString *descriptionForArray(NSArray *array) {
 	}
 
     frame.arguments = arguments;
-	[arguments release];
     
 	return [(NSObject<Callable> *)func call:frame];
 }
@@ -695,19 +673,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation IndexExpr
 
 + (IndexExpr *)exprWithExpr:(Expr *)expr subscriptExpr:(Expr *)subscriptExpr {
-	IndexExpr *indexExpr = [[[self alloc] init] autorelease];
+	IndexExpr *indexExpr = [[self alloc] init];
 	if (indexExpr) {
-		indexExpr->expr = [expr retain];
-		indexExpr->subscriptExpr = [subscriptExpr retain];
+		indexExpr->expr = expr;
+		indexExpr->subscriptExpr = subscriptExpr;
 	}
 	return indexExpr;
 }
 
-- (void)dealloc {
-	[expr release];
-	[subscriptExpr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *target = [expr evaluate:frame];
@@ -806,19 +779,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation AttrExpr
 
 + (AttrExpr *)exprWithExpr:(Expr *)expr name:(NSString *)name {
-	AttrExpr *attrExpr = [[[self alloc] init] autorelease];
+	AttrExpr *attrExpr = [[self alloc] init];
 	if (attrExpr) {
-		attrExpr->expr = [expr retain];
+		attrExpr->expr = expr;
 		attrExpr->name = [name copy];
 	}
 	return attrExpr;
 }
 
-- (void)dealloc {
-	[expr release];
-	[name release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *result = [expr evaluate:frame];
@@ -874,17 +842,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation LiteralExpr
 
 + (LiteralExpr *)exprWithValue:(NSObject *)value {
-	LiteralExpr *expr = [[[self alloc] init] autorelease];
+	LiteralExpr *expr = [[self alloc] init];
 	if (expr) {
-		expr->value = [value retain];
+		expr->value = value;
 	}
 	return expr;
 }
 
-- (void)dealloc {
-	[value release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     return value;
@@ -900,17 +864,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation VariableExpr
 
 + (VariableExpr *)exprWithName:(NSString *)name {
-	VariableExpr *expr = [[[self alloc] init] autorelease];
+	VariableExpr *expr = [[self alloc] init];
 	if (expr) {
 		expr->name = [name copy];
 	}
 	return expr;
 }
 
-- (void)dealloc {
-	[name release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *result = [frame localValueForName:name];
@@ -941,17 +901,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation TupleExpr
 
 + (Expr *)exprWithExprs:(NSArray *)exprs {
-	TupleExpr *expr = [[[self alloc] init] autorelease];
+	TupleExpr *expr = [[self alloc] init];
 	if (expr) {
 		expr->exprs = [exprs copy];
 	}
 	return expr;
 }
 
-- (void)dealloc {
-	[exprs release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
 	NSMutableArray *tuple = [NSMutableArray arrayWithCapacity:[exprs count]];
@@ -1097,17 +1053,13 @@ static NSString *descriptionForArray(NSArray *array) {
 }
 
 + (Suite *)suiteWithStmts:(NSArray *)stmts {
-	Suite *suite = [[[self alloc] init] autorelease];
+	Suite *suite = [[self alloc] init];
 	if (suite) {
 		suite->stmts = [stmts copy];
 	}
 	return suite;
 }
 
-- (void)dealloc {
-	[stmts release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *result = [Pyphon None];
@@ -1130,21 +1082,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation IfStmt
 
 + (IfStmt *)stmtWithTestExpr:(Expr *)testExpr thenSuite:(Suite *)thenSuite elseSuite:(Suite *)elseSuite {
-	IfStmt *stmt = [[[self alloc] init] autorelease];
+	IfStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->testExpr = [testExpr retain];
-		stmt->thenSuite = [thenSuite retain];
-		stmt->elseSuite = [elseSuite retain];
+		stmt->testExpr = testExpr;
+		stmt->thenSuite = thenSuite;
+		stmt->elseSuite = elseSuite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[testExpr release];
-	[thenSuite release];
-	[elseSuite release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *test = [testExpr evaluate:frame];
@@ -1168,21 +1114,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation WhileStmt
 
 + (WhileStmt *)stmtWithTestExpr:(Expr *)testExpr whileSuite:(Suite *)whileSuite elseSuite:(Suite *)elseSuite {
-	WhileStmt *stmt = [[[self alloc] init] autorelease];
+	WhileStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->testExpr = [testExpr retain];
-		stmt->whileSuite = [whileSuite retain];
-		stmt->elseSuite = [elseSuite retain];
+		stmt->testExpr = testExpr;
+		stmt->whileSuite = whileSuite;
+		stmt->elseSuite = elseSuite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[testExpr release];
-	[whileSuite release];
-	[elseSuite release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     while (TRUE) {
@@ -1215,23 +1155,16 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ForStmt
 
 + (ForStmt *)stmtWithTargetExpr:(Expr *)targetExpr iterExpr:(Expr *)iterExpr forSuite:(Suite *)forSuite elseSuite:(Suite *)elseSuite {
-	ForStmt *stmt = [[[self alloc] init] autorelease];
+	ForStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->targetExpr = [targetExpr retain];
-		stmt->iterExpr = [iterExpr retain];
-		stmt->forSuite = [forSuite retain];
-		stmt->elseSuite = [elseSuite retain];
+		stmt->targetExpr = targetExpr;
+		stmt->iterExpr = iterExpr;
+		stmt->forSuite = forSuite;
+		stmt->elseSuite = elseSuite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[targetExpr release];
-	[iterExpr release];
-	[forSuite release];
-	[elseSuite release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
 	// TODO need to create an iterator
@@ -1269,19 +1202,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation TryFinallyStmt
 
 + (TryFinallyStmt *)stmtWithTrySuite:(Suite *)trySuite finallySuite:(Suite *)finallySuite {
-	TryFinallyStmt *stmt = [[[self alloc] init] autorelease];
+	TryFinallyStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->trySuite = [trySuite retain];
-		stmt->finallySuite = [finallySuite retain];
+		stmt->trySuite = trySuite;
+		stmt->finallySuite = finallySuite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[trySuite release];
-	[finallySuite release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *result1 = [trySuite evaluate:frame];
@@ -1308,18 +1236,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation TryExceptStmt
 
 + (TryExceptStmt *)stmtWithTrySuite:(Suite *)trySuite exceptClauses:(NSArray *)exceptClauses elseSuite:(Suite *)elseSuite {
-	TryExceptStmt *stmt = [[[self alloc] init] autorelease];
+	TryExceptStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->trySuite = [trySuite retain];
+		stmt->trySuite = trySuite;
 		stmt->exceptClauses = [exceptClauses copy];
-		stmt->elseSuite = [elseSuite retain];
+		stmt->elseSuite = elseSuite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *result = [trySuite evaluate:frame];
@@ -1351,21 +1276,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ExceptClause
 
 + (ExceptClause *)exceptClauseWithExceptionsExpr:(Expr *)exceptionsExpr name:(NSString *)name suite:(Suite *)suite {
-	ExceptClause *clause = [[[self alloc] init] autorelease];
+	ExceptClause *clause = [[self alloc] init];
 	if (clause) {
-		clause->exceptionsExpr = [exceptionsExpr retain];
+		clause->exceptionsExpr = exceptionsExpr;
 		clause->name = [name copy];
-		clause->suite = [suite retain];
+		clause->suite = suite;
 	}
 	return clause;
 }
 
-- (void)dealloc {
-	[exceptionsExpr release];
-	[name release];
-	[suite release];
-	[super dealloc];
-}
 
 - (Value *)matches:(Value *)value frame:(Frame *)frame {
     if (!exceptionsExpr) {
@@ -1408,21 +1327,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation DefStmt
 
 + (DefStmt *)stmtWithName:(NSString *)name params:(NSArray *)params suite:(Suite *)suite {
-	DefStmt *stmt = [[[self alloc] init] autorelease];
+	DefStmt *stmt = [[self alloc] init];
 	if (stmt) {
 		stmt->name = [name copy];
 		stmt->params = [params copy];
-		stmt->suite = [suite retain];
+		stmt->suite = suite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[name release];
-	[params release];
-	[suite release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Function *function = [Function withName:name 
@@ -1443,21 +1356,15 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ClassStmt
 
 + (ClassStmt *)stmtWithName:(NSString *)name superExpr:(Expr *)superExpr suite:(Suite *)suite {
-	ClassStmt *stmt = [[[self alloc] init] autorelease];
+	ClassStmt *stmt = [[self alloc] init];
 	if (stmt) {
 		stmt->name = [name copy];
-		stmt->superExpr = [superExpr retain];
-		stmt->suite = [suite retain];
+		stmt->superExpr = superExpr;
+		stmt->suite = suite;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[name release];
-	[superExpr release];
-	[suite release];
-	[super dealloc];
-}
 
 // TODO evaluate missing
 
@@ -1471,7 +1378,7 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation PassStmt
 
 + (Stmt *)stmt {
-	return [[[self alloc] init] autorelease];
+	return [[self alloc] init];
 }
 
 - (Value *)evaluate:(Frame *)frame {
@@ -1488,7 +1395,7 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation BreakStmt
 
 + (Stmt *)stmt {
-	return [[[self alloc] init] autorelease];
+	return [[self alloc] init];
 }
 
 - (Value *)evaluate:(Frame *)frame {
@@ -1506,17 +1413,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ReturnStmt
 
 + (Stmt *)stmtWithExpr:(Expr *)expr {
-	ReturnStmt *stmt = [[[self alloc] init] autorelease];
+	ReturnStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->expr = [expr retain];
+		stmt->expr = expr;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[expr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *value = [expr evaluate:frame];
@@ -1539,17 +1442,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation RaiseStmt
 
 + (Stmt *)stmtWithExpr:(Expr *)expr {
-	RaiseStmt *stmt = [[[self alloc] init] autorelease];
+	RaiseStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->expr = [expr retain];
+		stmt->expr = expr;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[expr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *value = [expr evaluate:frame];
@@ -1572,19 +1471,14 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation AssignStmt
 
 + (Stmt *)stmtWithLeftExpr:(Expr *)leftExpr rightExpr:(Expr *)rightExpr {
-	AssignStmt *stmt = [[[self alloc] init] autorelease];
+	AssignStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->leftExpr = [leftExpr retain];
-		stmt->rightExpr = [rightExpr retain];
+		stmt->leftExpr = leftExpr;
+		stmt->rightExpr = rightExpr;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[leftExpr release];
-	[rightExpr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
     Value *value = [rightExpr evaluate:frame];
@@ -1643,17 +1537,13 @@ static NSString *descriptionForArray(NSArray *array) {
 @implementation ExprStmt
 
 + (Stmt *)stmtWithExpr:(Expr *)expr {
-	ExprStmt *stmt = [[[self alloc] init] autorelease];
+	ExprStmt *stmt = [[self alloc] init];
 	if (stmt) {
-		stmt->expr = [expr retain];
+		stmt->expr = expr;
 	}
 	return stmt;
 }
 
-- (void)dealloc {
-	[expr release];
-	[super dealloc];
-}
 
 - (Value *)evaluate:(Frame *)frame {
 	return [expr evaluate:frame];

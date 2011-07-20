@@ -58,9 +58,6 @@
 }
 
 
-- (void)dealloc {
-    [super dealloc];
-}
 
 #pragma mark -
 #pragma mark running Pyphon code
@@ -87,7 +84,6 @@
         return;
     }
     @finally {
-        [parser release];
     }
     
     if (mode) {
@@ -109,7 +105,6 @@
         return;
     }
     @finally {
-        [frame release];
     }
 }
 
@@ -126,7 +121,6 @@
         return;
     }
     @finally {
-        [parser release];
     }
     
     if (mode) {
@@ -144,7 +138,6 @@
         return;
     }
     @finally {
-        [frame release];
     }
 }
 

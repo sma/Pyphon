@@ -38,10 +38,10 @@ typedef enum { kValue, kReturn, kBreak, kException } ResultType;
  */
 @interface Pyphon : NSObject {
     NSMutableDictionary *builtins;
-    id<PyphonDelegate> delegate;
+    id<PyphonDelegate> __weak delegate;
 }
 
-@property(nonatomic,assign) id<PyphonDelegate> delegate;
+@property(nonatomic,weak) id<PyphonDelegate> delegate;
 
 + (Pyphon *)sharedInstance;
 
