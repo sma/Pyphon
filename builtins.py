@@ -117,14 +117,16 @@ def range(start, stop=None, step=1):
 
 __builtins__['range'] = range
 
-#def reduce(function, iterable, initializer=None):
-#    x = initializer
-#    for element in iterable:
-#        if x is None:
-#            x = element
-#        else:
-#            x = function(x, element)
-#    return x
+def reduce(function, iterable, initializer=None):
+    x = initializer
+    for element in iterable:
+        if x is None:
+            x = element
+        else:
+            x = function(x, element)
+    return x
+
+__builtins__['reduce'] = reduce
 
 def reversed(sequence):
     result = []
