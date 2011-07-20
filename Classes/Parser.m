@@ -550,9 +550,9 @@
 	if ([self at:@"finally"]) {
 		return [TryFinallyStmt stmtWithTrySuite:trySuite finallySuite:[self parse_suite]];
 	}
-	[self expect:@"expect"];
+	[self expect:@"except"];
 	NSMutableArray *exceptClauses = [NSMutableArray arrayWithObject:[self parse_except_clause]];
-	while ([self at:@"expect"]) {
+	while ([self at:@"except"]) {
 		[exceptClauses addObject:[self parse_except_clause]];
 	}
 	Suite *elseSuite = [self parse_else];
