@@ -97,24 +97,26 @@ __builtins__['min'] = min
 #            return default
 #        raise
 #
-#def range(start, stop=None, step=1):
-#    if step == 0:
-#        raise ValueError("step argument must not be zero")
-#    if stop is None:
-#        start, stop = 0, start
-#    if stop < start:
-#        if step > 0:
-#            return []
-#        start, stop = stop, start
-#    else:
-#        if step < 0:
-#            return []
-#    result = []
-#    while start < stop:
-#        result.append(start)
-#        start += step
-#    return result
-#
+def range(start, stop=None, step=1):
+    if step == 0:
+        raise ValueError("step argument must not be zero")
+    if stop is None:
+        start, stop = 0, start
+    if stop < start:
+        if step > 0:
+            return []
+        start, stop = stop, start
+    else:
+        if step < 0:
+            return []
+    result = []
+    while start < stop:
+        result.append(start)
+        start += step
+    return result
+
+__builtins__['range'] = range
+
 #def reduce(function, iterable, initializer=None):
 #    x = initializer
 #    for element in iterable:
