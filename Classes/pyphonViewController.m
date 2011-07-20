@@ -15,10 +15,26 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // create a new Pyphon runtime
+    pyphon = [[Pyphon alloc] init];
+    pyphon.delegate = self;
+    
+    
+    // preload builtins.py
+    NSURL *URL = [[NSBundle mainBundle] URLForResource:@"builtins" withExtension:@"py"];
+    NSString *source = [NSString stringWithContentsOfURL:URL encoding:NSUTF8StringEncoding error:NULL];
+    Parser *parser = [[Parser alloc] initWithString:source];
+    Suite *suite = [parser parse_file];
+    [suite evaluate:[pyphon newInitialFrame]];
+
+    // run the test case - just in case
+    // outputView.text = [Tester run];
+    
+    // initialize the UI
+    
 	inputView.text = @"print(3+4)";
-    
-    outputView.text = [Tester run];
-    
+   
     mode = 0;
 }
 
@@ -91,8 +107,7 @@
         return;
     }
     
-	Frame *frame = [[Pyphon sharedInstance] newInitialFrame];
-	[Pyphon sharedInstance].delegate = self;
+	Frame *frame = [pyphon newInitialFrame];
     @try {
         Value *result = [expr evaluate:frame];
         if (frame.resultType) {
@@ -128,8 +143,7 @@
         return;
     }
 	
-	Frame *frame = [[Pyphon sharedInstance] newInitialFrame];
-	[Pyphon sharedInstance].delegate = self;
+	Frame *frame = [pyphon newInitialFrame];
     @try {
         [suite evaluate:frame];
     }

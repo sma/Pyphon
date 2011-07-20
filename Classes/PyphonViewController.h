@@ -6,13 +6,14 @@
 //  Copyright 2011 I.C.N.H. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import "Parser.h"
+#import "Runtime.h"
 
 @interface PyphonViewController : UIViewController <PyphonDelegate> {
 	IBOutlet UITextView *inputView;
 	IBOutlet UITextView *outputView;
     NSInteger mode;
+    Pyphon *pyphon;
 }
 
 - (IBAction)clearInput:(id)sender;
